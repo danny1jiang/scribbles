@@ -6,6 +6,8 @@
 	--color-primary: #00467f;
 	--color-secondary: #8cd2f4;
 	--color-accent: #999999;
+	--color-gray: #c0c0c0;
+	--color-dark-gray: #616161;
 }
 
 @theme inline {
