@@ -1,12 +1,14 @@
 import Link from "next/link";
 
 export function CustomButton({type, onClick, text, href}) {
-	let className =
-		"flex flex-col justify-center items-center border-solid border-1 rounded-xl border-(--color-primary) w-30 h-12";
+	let className = "flex flex-col justify-center items-center cursor-pointer ";
 
 	if (type === "primary") {
-		className =
-			"flex flex-col justify-center items-center bg-(--color-primary) text-white rounded-xl w-30 h-12";
+		className +=
+			"bg-(--color-primary) text-white rounded-xl w-30 h-12 hover:bg-[#266ba4] transition duration-150 ease-in-out";
+	} else {
+		className +=
+			"border-solid border-1 rounded-xl border-(--color-primary) w-30 h-12 hover:bg-[#efefef] transition duration-150 ease-in-out";
 	}
 
 	if (href) {
