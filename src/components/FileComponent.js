@@ -1,8 +1,8 @@
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 
-export function FileComponent({className, onChange}) {
+export function FileComponent({className, onChange, file}) {
 	const fileInputRef = useRef(null);
-	const [selectedFile, setSelectedFile] = useState(null);
+	const [selectedFile, setSelectedFile] = useState(file || null);
 
 	const handleClick = () => {
 		fileInputRef.current.click();
@@ -27,6 +27,13 @@ export function FileComponent({className, onChange}) {
 			onChange(event.target.files[0]);
 		}
 	};
+
+	// Update selectedFile when file prop changes
+	useEffect(() => {
+		if (file) {
+			setSelectedFile(file);
+		}
+	}, [file]);
 
 	return (
 		<div

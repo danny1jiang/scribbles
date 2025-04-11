@@ -3,24 +3,17 @@
 import {useState} from "react";
 import {CustomText} from "@/components/CustomText";
 
-export function PaymentDetailsComponent({onNext}) {
-	const [paymentDetails, setPaymentDetails] = useState("");
+export function PaymentDetailsComponent({setFormData, formData, onNext}) {
+	const [paymentDetails, setPaymentDetails] = useState(formData.payment);
 	const [charCount, setCharCount] = useState(0);
 	const maxChars = 500;
 
 	const handlePaymentDetailsChange = (e) => {
 		const text = e.target.value;
 		if (text.length <= maxChars) {
+			setFormData({...formData, payment: text});
 			setPaymentDetails(text);
 			setCharCount(text.length);
-		}
-	};
-
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		if (paymentDetails.trim()) {
-			console.log("Payment details submitted:", paymentDetails);
-			if (onNext) onNext({paymentMethod: paymentDetails});
 		}
 	};
 

@@ -3,7 +3,7 @@
 import {useState} from "react";
 import {CustomText} from "@/components/CustomText";
 
-export function ConfirmationComponent({onNext, onBack, formData}) {
+export function ConfirmationComponent({formData, onNext, onBack}) {
 	const [agreed, setAgreed] = useState(false);
 
 	const handleCheckboxChange = () => {

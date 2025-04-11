@@ -5,12 +5,16 @@ import {FileComponent} from "@/components/FileComponent";
 import {useState, useEffect} from "react";
 import Image from "next/image";
 
-export function DesignComponent({styles}) {
+export function DesignComponent({setFormData, formData, styles}) {
 	const [selectedFile, setSelectedFile] = useState(null);
 	const [previewUrl, setPreviewUrl] = useState(null);
 
 	const handleFileChange = (file) => {
 		setSelectedFile(file);
+		setFormData({
+			...formData,
+			design: file,
+		});
 
 		// Create URL for preview
 		if (file) {
@@ -30,6 +34,14 @@ export function DesignComponent({styles}) {
 		};
 	}, [previewUrl]);
 
+	useEffect(() => {
+		if (formData.design) {
+			setSelectedFile(formData.design);
+			const fileUrl = URL.createObjectURL(formData.design);
+			setPreviewUrl(fileUrl);
+		}
+	}, [formData.design]);
+
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
 			<div className="flex flex-row w-full justify-between">
@@ -41,7 +53,11 @@ export function DesignComponent({styles}) {
 						Upload Your Design
 					</CustomText>
 					<div className="flex-grow">
-						<FileComponent className="h-full" onChange={handleFileChange} />
+						<FileComponent
+							className="h-full"
+							onChange={handleFileChange}
+							file={formData.design}
+						/>
 					</div>
 				</div>
 				{/* Preview Section - This has fixed height and will determine parent height */}

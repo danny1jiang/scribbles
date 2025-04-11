@@ -3,8 +3,8 @@
 import {useState} from "react";
 import {CustomText} from "@/components/CustomText";
 
-export function SpecialInstructionsComponent({onChange}) {
-	const [instructions, setInstructions] = useState("");
+export function SpecialInstructionsComponent({setFormData, formData, onChange}) {
+	const [instructions, setInstructions] = useState(formData.specialInstructions);
 	const [charCount, setCharCount] = useState(0);
 	const maxChars = 500;
 
@@ -12,6 +12,7 @@ export function SpecialInstructionsComponent({onChange}) {
 		const text = e.target.value;
 		if (text.length <= maxChars) {
 			setInstructions(text);
+			setFormData({...formData, specialInstructions: text});
 			setCharCount(text.length);
 			if (onChange) {
 				onChange(text);

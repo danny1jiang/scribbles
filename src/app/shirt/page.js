@@ -19,6 +19,15 @@ export default function ShirtPage() {
 		"Tell us about the basic information of your shirt order."
 	);
 
+	const [formData, setFormData] = useState({
+		quantity: 1,
+		size: "Medium",
+		material: "Cotton",
+		design: null,
+		specialInstructions: "",
+		payment: "",
+	});
+
 	function handleNext() {
 		setStep(step + 1);
 		handleTitleChange(step + 1);
@@ -97,7 +106,11 @@ export default function ShirtPage() {
 							initial={{y: 5, opacity: 0.5}}
 							className="pt-8 pb-12"
 						>
-							<ShirtFormComponent step={step} />
+							<ShirtFormComponent
+								formData={formData}
+								setFormData={setFormData}
+								step={step}
+							/>
 						</motion.div>
 					</motion.div>
 					<div className="flex flex-row justify-end items-center w-full">
