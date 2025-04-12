@@ -1,7 +1,7 @@
 import {CustomText} from "@/components/CustomText";
 import {SelectComponent} from "@/components/SelectComponent";
 
-export function BasicInfoComponent({setFormData, formData, styles}) {
+export function ShirtBasicInfoComponent({setFormData, formData, styles}) {
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
 			<CustomText type={"medium"}>Quantity</CustomText>

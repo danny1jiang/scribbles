@@ -5,7 +5,7 @@ import {FileComponent} from "@/components/FileComponent";
 import {useState, useEffect} from "react";
 import Image from "next/image";
 
-export function DesignComponent({setFormData, formData, styles}) {
+export function StickerDesignComponent({setFormData, formData, styles}) {
 	const [selectedFile, setSelectedFile] = useState(null);
 	const [previewUrl, setPreviewUrl] = useState(null);
 

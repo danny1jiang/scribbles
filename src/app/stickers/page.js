@@ -5,7 +5,7 @@ import {FormWrapperComponent} from "../../components/orderForm/shared/FormWrappe
 
 const maxSteps = 4;
 
-export default function ShirtPage() {
+export default function StickersPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
 		size: "Medium",
@@ -17,6 +17,6 @@ export default function ShirtPage() {
 	});
 
 	return (
-		<FormWrapperComponent itemType={"shirt"} formData={formData} setFormData={setFormData} />
+		<FormWrapperComponent itemType={"sticker"} formData={formData} setFormData={setFormData} />
 	);
 }
