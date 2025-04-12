@@ -10,7 +10,7 @@ import {motion} from "framer-motion";
 import {ProgressBar} from "@/components/ProgressBar";
 import {FormProgressComponent} from "@/components/FormProgressComponent";
 
-const maxSteps = 5;
+const maxSteps = 4;
 
 export default function ShirtPage() {
 	const [step, setStep] = useState(0);
@@ -33,6 +33,10 @@ export default function ShirtPage() {
 		handleTitleChange(step + 1);
 	}
 
+	function handleSubmit() {
+		console.log(formData);
+	}
+
 	function handleTitleChange(step) {
 		switch (step) {
 			case 0:
@@ -48,14 +52,10 @@ export default function ShirtPage() {
 				setDescription("Upload your design and see how it will look on your shirt.");
 				break;
 			case 3:
-				setTitle("Special Instructions");
-				setDescription("Add any special instructions or notes for your order.");
-				break;
-			case 4:
 				setTitle("Payment");
 				setDescription("Describe your desired payment method.");
 				break;
-			case 5:
+			case 4:
 				setTitle("Confirmation");
 				setDescription("Confirm your order details and submit the order form.");
 				break;
@@ -72,14 +72,7 @@ export default function ShirtPage() {
 						setStep(index);
 						handleTitleChange(index);
 					}}
-					steps={[
-						"General",
-						"Materials",
-						"Design",
-						"Instructions",
-						"Payment",
-						"Confirmation",
-					]}
+					steps={["General", "Materials", "Design", "Payment", "Confirmation"]}
 					currentStep={step} // Pass the current step index (0-based)
 				/>
 			</div>
@@ -127,7 +120,11 @@ export default function ShirtPage() {
 						)}
 						{step === maxSteps ? (
 							<div className="ml-5">
-								<CustomButton type={"primary"} text={"Submit"} onClick={() => {}} />
+								<CustomButton
+									type={"primary"}
+									text={"Submit"}
+									onClick={handleSubmit}
+								/>
 							</div>
 						) : (
 							<div className="ml-5">

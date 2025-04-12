@@ -23,10 +23,8 @@ export function ShirtFormComponent({formData, setFormData, step}) {
 				<DesignComponent setFormData={setFormData} formData={formData} styles={styles} />
 			);
 		case 3:
-			return <SpecialInstructionsComponent setFormData={setFormData} formData={formData} />;
-		case 4:
 			return <PaymentDetailsComponent setFormData={setFormData} formData={formData} />;
-		case 5:
+		case 4:
 			return <ConfirmationComponent setFormData={setFormData} formData={formData} />;
 	}
 }
