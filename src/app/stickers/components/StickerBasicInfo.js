@@ -15,6 +15,17 @@ export function StickerBasicInfoComponent({setFormData, formData, styles}) {
 				}}
 				type="number"
 			/>
+			<CustomText className={"mt-5"} type={"medium"}>
+				Size
+			</CustomText>
+			<SelectComponent
+				className={styles.textBox + " " + styles.textBoxNormal}
+				options={["Small", "Medium", "Large"]}
+				defaultValue={formData.size}
+				onChange={(selected) => {
+					setFormData({...formData, size: selected});
+				}}
+			/>
 		</div>
 	);
 }

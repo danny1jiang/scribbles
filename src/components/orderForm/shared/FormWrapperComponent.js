@@ -1,20 +1,21 @@
 "use client";
 
-import {useEffect, useLayoutEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {motion} from "framer-motion";
 import {FormProgressComponent} from "@/components/FormProgressComponent";
 import {CustomButton} from "@/components/CustomButton";
 import {CustomText} from "@/components/CustomText";
 import {FormContentComponent} from "./FormContentComponent";
-import {ShirtBasicInfoComponent} from "@/app/shirt/components/ShirtBasicInfo";
-import {ShirtMaterialsComponent} from "@/app/shirt/components/ShirtMaterialsComponent";
-import {ShirtDesignComponent} from "@/app/shirt/components/ShirtDesignComponent";
-import {StickerBasicInfoComponent} from "@/app/stickers/components/StickerBasicInfo";
-import {StickerMaterialsComponent} from "@/app/stickers/components/StickerMaterialsComponent";
-import {StickerDesignComponent} from "@/app/stickers/components/StickerDesignComponent";
 
 const maxSteps = 4;
-export function FormWrapperComponent({itemType, formData, setFormData}) {
+export function FormWrapperComponent({
+	componentArray,
+	textObj,
+	styles,
+	itemType,
+	formData,
+	setFormData,
+}) {
 	const [step, setStep] = useState(0);
 	const [title, setTitle] = useState("General Information");
 	const [description, setDescription] = useState(
@@ -22,7 +23,42 @@ export function FormWrapperComponent({itemType, formData, setFormData}) {
 	);
 	const [formErrors, setFormErrors] = useState([]);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [componentArray, setComponentArray] = useState([]);
+
+	//textArray is {title, progressTitle, description}
+
+	// Titles and descriptions
+	const shirtTitles = ["General Information", "Material", "Design", "Payment", "Confirmation"];
+	const shirtProgressTitles = ["General", "Materials", "Design", "Payment", "Confirmation"];
+	const shirtDescription = [
+		"Tell us about the basic information of your shirt order.",
+		"Choose from the following materials for your shirt.",
+		"Upload your design and see how it will look on your shirt.",
+		"Describe your desired payment method.",
+		"Confirm your order details and submit the order form.",
+	];
+
+	const stickerTitles = [
+		"General Information",
+		"Sticker Type",
+		"Design",
+		"Payment",
+		"Confirmation",
+	];
+	const stickerProgressTitles = ["General", "Type", "Design", "Payment", "Confirmation"];
+	const stickerDescription = [
+		"Tell us about the basic information of your sticker order.",
+		"Choose from the following sticker types.",
+		"Upload your design and see how it will look on your sticker.",
+		"Describe your desired payment method.",
+		"Confirm your order details and submit the order form.",
+	];
+
+	let progressTitles = [];
+	if (itemType === "shirt") {
+		progressTitles = shirtProgressTitles;
+	} else if (itemType === "sticker") {
+		progressTitles = stickerProgressTitles;
+	}
 
 	useEffect(() => {
 		if (step === maxSteps) {
@@ -30,49 +66,9 @@ export function FormWrapperComponent({itemType, formData, setFormData}) {
 		}
 	}, [step]);
 
-	useLayoutEffect(() => {
-		const shirtComponents = [
-			<ShirtBasicInfoComponent
-				setFormData={setFormData}
-				formData={formData}
-				styles={styles}
-			/>,
-			<ShirtMaterialsComponent
-				setFormData={setFormData}
-				formData={formData}
-				styles={styles}
-			/>,
-			<ShirtDesignComponent setFormData={setFormData} formData={formData} styles={styles} />,
-		];
-
-		const stickerComponents = [
-			<StickerBasicInfoComponent
-				setFormData={setFormData}
-				formData={formData}
-				styles={styles}
-			/>,
-			<StickerMaterialsComponent
-				setFormData={setFormData}
-				formData={formData}
-				styles={styles}
-			/>,
-			<StickerDesignComponent
-				setFormData={setFormData}
-				formData={formData}
-				styles={styles}
-			/>,
-		];
-
-		if (itemType === "shirt") {
-			setComponentArray(shirtComponents);
-		} else if (itemType === "sticker") {
-			setComponentArray(stickerComponents);
-		}
-	}, []);
-
 	function handleNext() {
 		setStep(step + 1);
-		handleTitleChange(step + 1, setTitle, setDescription);
+		handleTitleChange(step + 1);
 	}
 
 	function handleSubmit() {
@@ -91,15 +87,20 @@ export function FormWrapperComponent({itemType, formData, setFormData}) {
 		}
 	}
 
+	function handleTitleChange(step) {
+		setTitle(textObj.titles[step]);
+		setDescription(textObj.descriptions[step]);
+	}
+
 	return (
 		<div className="flex flex-col relative items-center justify-start h-screen">
 			<div className="w-full mb-[1.5%] mt-[1.5%]">
 				<FormProgressComponent
 					onClick={(index) => {
 						setStep(index);
-						handleTitleChange(index, setTitle, setDescription);
+						handleTitleChange(index);
 					}}
-					steps={["General", "Materials", "Design", "Payment", "Confirmation"]}
+					steps={textObj.progressTitles}
 					currentStep={step} // Pass the current step index (0-based)
 				/>
 			</div>
@@ -140,7 +141,7 @@ export function FormWrapperComponent({itemType, formData, setFormData}) {
 								text={"Back"}
 								onClick={() => {
 									setStep(step - 1);
-									handleTitleChange(step - 1, setTitle, setDescription);
+									handleTitleChange(step - 1);
 								}}
 							/>
 						)}
@@ -163,33 +164,6 @@ export function FormWrapperComponent({itemType, formData, setFormData}) {
 			</div>
 		</div>
 	);
-}
-
-function handleTitleChange(step, setTitle, setDescription) {
-	switch (step) {
-		case 0:
-			setTitle("General Information");
-			setDescription("Tell us about the basic information of your shirt order.");
-			break;
-		case 1:
-			setTitle("Material");
-			setDescription("Choose from the following materials for your shirt.");
-			break;
-		case 2:
-			setTitle("Design");
-			setDescription("Upload your design and see how it will look on your shirt.");
-			break;
-		case 3:
-			setTitle("Payment");
-			setDescription("Describe your desired payment method.");
-			break;
-		case 4:
-			setTitle("Confirmation");
-			setDescription("Confirm your order details and submit the order form.");
-			break;
-		default:
-			setTitle("General Information");
-	}
 }
 
 function validateForm(formData, setFormErrors) {
@@ -225,10 +199,3 @@ function validateForm(formData, setFormErrors) {
 	setFormErrors(errors);
 	return errors.length === 0;
 }
-
-const styles = {
-	textBox: "border-(--color-gray) border-solid border-1 resize-none rounded-lg",
-	textBoxPadding: "pl-2",
-	textBoxWide: "w-1/1 h-12",
-	textBoxNormal: "w-1/1 h-12",
-};
