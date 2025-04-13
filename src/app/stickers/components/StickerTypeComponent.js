@@ -10,7 +10,7 @@ export function StickerTypeComponent({setFormData, formData, styles}) {
 				options={["Dye Cut", "Sticker Sheet"]}
 				defaultValue={formData.material}
 				onChange={(selected) => {
-					setFormData({...formData, material: selected});
+					setFormData({...formData, type: selected});
 				}}
 			/>
 		</div>

@@ -11,6 +11,7 @@ const maxSteps = 4;
 export function FormWrapperComponent({
 	componentArray,
 	textObj,
+	summaryInfo,
 	styles,
 	itemType,
 	formData,
@@ -23,42 +24,6 @@ export function FormWrapperComponent({
 	);
 	const [formErrors, setFormErrors] = useState([]);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-
-	//textArray is {title, progressTitle, description}
-
-	// Titles and descriptions
-	const shirtTitles = ["General Information", "Material", "Design", "Payment", "Confirmation"];
-	const shirtProgressTitles = ["General", "Materials", "Design", "Payment", "Confirmation"];
-	const shirtDescription = [
-		"Tell us about the basic information of your shirt order.",
-		"Choose from the following materials for your shirt.",
-		"Upload your design and see how it will look on your shirt.",
-		"Describe your desired payment method.",
-		"Confirm your order details and submit the order form.",
-	];
-
-	const stickerTitles = [
-		"General Information",
-		"Sticker Type",
-		"Design",
-		"Payment",
-		"Confirmation",
-	];
-	const stickerProgressTitles = ["General", "Type", "Design", "Payment", "Confirmation"];
-	const stickerDescription = [
-		"Tell us about the basic information of your sticker order.",
-		"Choose from the following sticker types.",
-		"Upload your design and see how it will look on your sticker.",
-		"Describe your desired payment method.",
-		"Confirm your order details and submit the order form.",
-	];
-
-	let progressTitles = [];
-	if (itemType === "shirt") {
-		progressTitles = shirtProgressTitles;
-	} else if (itemType === "sticker") {
-		progressTitles = stickerProgressTitles;
-	}
 
 	useEffect(() => {
 		if (step === maxSteps) {
@@ -126,6 +91,7 @@ export function FormWrapperComponent({
 						>
 							<FormContentComponent
 								styles={styles}
+								summaryInfo={summaryInfo}
 								components={componentArray}
 								formData={formData}
 								setFormData={setFormData}

@@ -34,6 +34,12 @@ export default function ShirtPage() {
 		"Describe your desired payment method.",
 		"Confirm your order details and submit the order form.",
 	];
+	const summaryInfo = [
+		{header: "General Information", fields: ["Quantity", "Size"], required: [true, true]},
+		{header: "Material", fields: ["Material"], required: [true]},
+		{header: "Design", fields: ["Design"], required: [false]},
+		{header: "Payment", fields: ["Email", "Payment"], required: [true, true]},
+	];
 
 	return (
 		<FormWrapperComponent
@@ -43,6 +49,7 @@ export default function ShirtPage() {
 				progressTitles: progressTitles,
 				descriptions: descriptions,
 			}}
+			summaryInfo={summaryInfo}
 			styles={styles}
 			itemType={"shirt"}
 			formData={formData}

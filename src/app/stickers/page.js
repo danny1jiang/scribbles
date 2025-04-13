@@ -12,7 +12,7 @@ export default function StickersPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
 		size: "Medium",
-		material: "Dye Cut",
+		type: "Dye Cut",
 		design: null,
 		specialInstructions: "",
 		payment: "",
@@ -34,6 +34,12 @@ export default function StickersPage() {
 		"Describe your desired payment method.",
 		"Confirm your order details and submit the order form.",
 	];
+	const summaryInfo = [
+		{header: "General Information", fields: ["Quantity", "Size"], required: [true, true]},
+		{header: "Sticker Type", fields: ["Type"], required: [true]},
+		{header: "Design", fields: ["Design"], required: [false]},
+		{header: "Payment", fields: ["Email", "Payment"], required: [true, true]},
+	];
 
 	return (
 		<FormWrapperComponent
@@ -43,6 +49,7 @@ export default function StickersPage() {
 				progressTitles: progressTitles,
 				descriptions: descriptions,
 			}}
+			summaryInfo={summaryInfo}
 			styles={styles}
 			itemType={"sticker"}
 			formData={formData}

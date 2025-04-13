@@ -1,23 +1,34 @@
 "use client";
 
-import {useState, useEffect} from "react";
+import {useState, useEffect, useMemo} from "react";
 import {CustomText} from "@/components/CustomText";
 
-export function ConfirmationComponent({formData, setFormData}) {
+export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
 	const [designPreviewUrl, setDesignPreviewUrl] = useState(null);
 	const [instructions, setInstructions] = useState(formData?.specialInstructions || "");
 	const [charCount, setCharCount] = useState(formData?.specialInstructions?.length || 0);
 	const maxChars = 500;
 
-	// Check which required fields are missing
-	const isMissing = {
-		quantity: !formData?.quantity,
-		size: !formData?.size,
-		material: !formData?.material,
-		design: !formData?.design,
-		email: !formData?.email,
-		payment: !formData?.payment || formData.payment.trim() === "",
-	};
+	// Dynamically build the isMissing object based on summaryInfo
+	const isMissing = useMemo(() => {
+		const result = {email: !formData?.email}; // Always include email as it's not always in summaryInfo
+
+		// Extract all fields from summaryInfo and check if they're missing
+		summaryInfo.forEach((section) => {
+			section.fields.forEach((field) => {
+				const fieldName = field.toLowerCase();
+				if (fieldName === "payment") {
+					result[fieldName] = !formData?.[fieldName] || formData[fieldName].trim() === "";
+				} else if (fieldName === "design") {
+					result[fieldName] = !formData?.[fieldName];
+				} else {
+					result[fieldName] = !formData?.[fieldName];
+				}
+			});
+		});
+
+		return result;
+	}, [formData, summaryInfo]);
 
 	useEffect(() => {
 		// Create URL for design preview if design exists
@@ -40,170 +51,81 @@ export function ConfirmationComponent({formData, setFormData}) {
 	// Helper function for required field indicators
 	const RequiredIndicator = () => <span className="text-[#CC0033] ml-1 font-bold">*</span>;
 
+	// Helper function to format field name for display
+	const formatFieldName = (field) => {
+		return field.charAt(0).toUpperCase() + field.slice(1) + ":";
+	};
+
+	// Helper function to get field value with proper formatting
+	const getFieldValue = (field) => {
+		const fieldName = field.toLowerCase();
+		const value = formData?.[fieldName];
+
+		if (fieldName === "design" && value) {
+			return value.name;
+		}
+
+		return value || <span>Not provided</span>;
+	};
+
+	// Check if any field in a section is missing
+	const isSectionMissing = (fields) => {
+		return fields.some((field) => isMissing[field.toLowerCase()]);
+	};
+
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
 			<div className="flex flex-col w-full">
 				<div className="flex flex-col mb-6 rounded-lg gap-10">
-					<div>
-						<div className="flex items-center">
-							<CustomText type={"medium"} className="text-lg">
-								General Information
-							</CustomText>
-							{(isMissing.quantity || isMissing.size) && <RequiredIndicator />}
-						</div>
-						<div className="border-(--color-light-gray) border-1 mb-2" />
-						<div className="flex flex-row justify-between items-center">
-							<div className="flex flex-1 flex-col">
-								<div className="flex items-center">
-									<CustomText
-										className={isMissing.quantity ? "text-[#CC0033]" : ""}
-									>
-										Quantity:
-									</CustomText>
-									{isMissing.quantity && <RequiredIndicator />}
-								</div>
-								<div className="flex items-center">
-									<CustomText className={isMissing.size ? "text-[#CC0033]" : ""}>
-										Size:
-									</CustomText>
-									{isMissing.size && <RequiredIndicator />}
-								</div>
-							</div>
-							<div className="flex flex-1 flex-col">
-								<CustomText>
-									{formData?.quantity || (
-										<span className="text-[#CC0033]">Not provided</span>
-									)}
+					{summaryInfo.map((section, sectionIndex) => (
+						<div key={sectionIndex}>
+							<div className="flex items-center">
+								<CustomText type={"medium"} className="text-lg">
+									{section.header}
 								</CustomText>
-								<CustomText>
-									{formData?.size || (
-										<span className="text-[#CC0033]">Not provided</span>
-									)}
-								</CustomText>
+								{isSectionMissing(section.fields)}
 							</div>
-						</div>
-					</div>
-
-					{/* Materials Section */}
-					<div>
-						<div className="flex items-center">
-							<CustomText type={"medium"} className="text-lg">
-								Materials
-							</CustomText>
-							{isMissing.material && <RequiredIndicator />}
-						</div>
-						<div className="border-(--color-light-gray) border-1 mb-2" />
-						<div className="flex flex-row justify-between items-center">
-							<div className="flex flex-1 flex-col">
-								<div className="flex items-center">
-									<CustomText
-										className={isMissing.material ? "text-[#CC0033]" : ""}
-									>
-										Material:
-									</CustomText>
-									{isMissing.material && <RequiredIndicator />}
+							<div className="border-(--color-light-gray) border-1 mb-2" />
+							<div className="flex flex-row justify-between items-start">
+								{/* Labels column */}
+								<div className="flex flex-1 flex-col">
+									{section.fields.map((field, fieldIndex) => (
+										<div key={fieldIndex} className="flex items-center">
+											<CustomText>{formatFieldName(field)}</CustomText>
+											{section.required[fieldIndex] && <RequiredIndicator />}
+										</div>
+									))}
+								</div>
+								{/* Values column - fixed the text wrapping */}
+								<div className="flex flex-1 flex-col">
+									{section.fields.map((field, fieldIndex) => (
+										<div
+											key={fieldIndex}
+											className="whitespace-pre-wrap wrap-break-word pr-2 max-w-full"
+											style={{
+												overflowWrap: "break-word",
+												hyphens: "auto",
+											}}
+										>
+											<CustomText>{getFieldValue(field)}</CustomText>
+										</div>
+									))}
 								</div>
 							</div>
-							<div className="flex flex-1 flex-col">
-								<CustomText>
-									{formData?.material || (
-										<span className="text-[#CC0033]">Not provided</span>
-									)}
-								</CustomText>
-							</div>
-						</div>
-					</div>
-
-					{/* Design Section */}
-					<div>
-						<div className="flex items-center">
-							<CustomText type={"medium"} className="text-lg">
-								Design
-							</CustomText>
-							{isMissing.design && <RequiredIndicator />}
-						</div>
-						<div className="border-(--color-light-gray) border-1 mb-2" />
-						<div className="flex flex-row justify-between items-center">
-							<div className="flex flex-1 flex-col">
-								<div className="flex items-center">
-									<CustomText
-										className={isMissing.design ? "text-[#CC0033]" : ""}
-									>
-										Design File:
-									</CustomText>
-									{isMissing.design && <RequiredIndicator />}
+							{section.header.includes("Design") && designPreviewUrl && (
+								<div className="mt-2 flex justify-center">
+									<img
+										src={designPreviewUrl}
+										alt="Design Preview"
+										className="max-h-32 object-contain"
+									/>
 								</div>
-							</div>
-							<div className="flex flex-1 flex-col">
-								<CustomText>
-									{formData?.design ? (
-										formData.design.name
-									) : (
-										<span className="text-[#CC0033]">No design uploaded</span>
-									)}
-								</CustomText>
-							</div>
+							)}
 						</div>
-						{designPreviewUrl && (
-							<div className="mt-2 flex justify-center">
-								<img
-									src={designPreviewUrl}
-									alt="Design Preview"
-									className="max-h-32 object-contain"
-								/>
-							</div>
-						)}
-					</div>
-
-					{/* Payment Details Section */}
-					<div>
-						<div className="flex items-center">
-							<CustomText type={"medium"} className="text-lg">
-								Payment Details
-							</CustomText>
-							{(isMissing.email || isMissing.payment) && <RequiredIndicator />}
-						</div>
-						<div className="border-(--color-light-gray) border-1" />
-						<div className="flex flex-row justify-between items-center">
-							<div className="flex flex-1 flex-col">
-								<div className="flex items-center">
-									<CustomText className={isMissing.email ? "text-[#CC0033]" : ""}>
-										Email:
-									</CustomText>
-									{isMissing.email && <RequiredIndicator />}
-								</div>
-							</div>
-							<div className="flex flex-1 flex-col">
-								<CustomText>
-									{formData?.email || (
-										<span className="text-[#CC0033]">Not provided</span>
-									)}
-								</CustomText>
-							</div>
-						</div>
-						<div className="mt-2">
-							<div className="break-words overflow-hidden">
-								<div className="flex items-center mb-1">
-									<CustomText
-										className={isMissing.payment ? "text-[#CC0033]" : ""}
-									>
-										Payment Details:
-									</CustomText>
-									{isMissing.payment && <RequiredIndicator />}
-								</div>
-								<CustomText>
-									{formData?.payment ? (
-										formData.payment
-									) : (
-										<span className="text-[#CC0033]">
-											No payment details provided
-										</span>
-									)}
-								</CustomText>
-							</div>
-						</div>
-					</div>
+					))}
 				</div>
+
+				{/* Special Instructions Section - Always at the end */}
 				<div className="flex flex-col w-full">
 					<CustomText type={"medium"} className="mb-2">
 						Special Instructions
