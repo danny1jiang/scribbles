@@ -6,6 +6,7 @@ import {FormProgressComponent} from "@/components/FormProgressComponent";
 import {CustomButton} from "@/components/CustomButton";
 import {CustomText} from "@/components/CustomText";
 import {FormContentComponent} from "./FormContentComponent";
+import {setSheetData} from "@/utils/spreadsheetHandler";
 
 const maxSteps = 4;
 export function FormWrapperComponent({
@@ -44,6 +45,7 @@ export function FormWrapperComponent({
 			console.log("Form submitted successfully:", formData);
 			// Here you would typically send the data to your backend
 			alert("Your order has been submitted successfully!");
+			setSheetData(formData, itemType);
 			// Optionally reset the form or redirect
 		} else {
 			// Form has errors
@@ -133,6 +135,7 @@ export function FormWrapperComponent({
 }
 
 function validateForm(formData, setFormErrors) {
+	return true;
 	const errors = [];
 
 	if (!formData.quantity || formData.quantity < 1) {
@@ -145,10 +148,6 @@ function validateForm(formData, setFormErrors) {
 
 	if (!formData.material) {
 		errors.push("Please select a material");
-	}
-
-	if (!formData.design) {
-		errors.push("Please upload a design file");
 	}
 
 	if (

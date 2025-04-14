@@ -8,7 +8,7 @@ export function StickerTypeComponent({setFormData, formData, styles}) {
 			<SelectComponent
 				className={styles.textBox + " " + styles.textBoxNormal}
 				options={["Dye Cut", "Sticker Sheet"]}
-				defaultValue={formData.material}
+				defaultValue={formData.type}
 				onChange={(selected) => {
 					setFormData({...formData, type: selected});
 				}}
