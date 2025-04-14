@@ -4,7 +4,6 @@ import {useState, useEffect, useMemo} from "react";
 import {CustomText} from "@/components/CustomText";
 
 export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
-	const [designPreviewUrl, setDesignPreviewUrl] = useState(null);
 	const [instructions, setInstructions] = useState(formData?.specialInstructions || "");
 	const [charCount, setCharCount] = useState(formData?.specialInstructions?.length || 0);
 	const maxChars = 500;
@@ -29,15 +28,6 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
 
 		return result;
 	}, [formData, summaryInfo]);
-
-	useEffect(() => {
-		// Create URL for design preview if design exists
-		if (formData?.design) {
-			const url = URL.createObjectURL(formData.design);
-			setDesignPreviewUrl(url);
-			return () => URL.revokeObjectURL(url);
-		}
-	}, [formData?.design]);
 
 	const handleInstructionsChange = (e) => {
 		const text = e.target.value;
@@ -65,7 +55,38 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
 			return value.name;
 		}
 
-		return value || <span>Not provided</span>;
+		// Special handling for displaying color with visual indicator
+		if (fieldName === "color" && value) {
+			// Color hex values mapping for visual indicators
+			const colorHexMap = {
+				White: "#FFFFFF",
+				Black: "#000000",
+				Navy: "#000080",
+				Red: "#FF0000",
+				Green: "#008000",
+				Gray: "#808080",
+				Blue: "#0000FF",
+				Yellow: "#FFFF00",
+			};
+
+			return (
+				<div className="flex items-center">
+					<div
+						className={`w-4 h-4 rounded-full mr-2 ${
+							value === "White" ? "border border-gray-300" : ""
+						}`}
+						style={{backgroundColor: colorHexMap[value] || "#FFFFFF"}}
+					></div>
+					<CustomText>{value}</CustomText>
+				</div>
+			);
+		}
+
+		if (value) {
+			return <CustomText>{value}</CustomText>;
+		} else {
+			return <CustomText>Not provided</CustomText>;
+		}
 	};
 
 	// Check if any field in a section is missing
@@ -107,20 +128,11 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
 												hyphens: "auto",
 											}}
 										>
-											<CustomText>{getFieldValue(field)}</CustomText>
+											{getFieldValue(field)}
 										</div>
 									))}
 								</div>
 							</div>
-							{section.header.includes("Design") && designPreviewUrl && (
-								<div className="mt-2 flex justify-center">
-									<img
-										src={designPreviewUrl}
-										alt="Design Preview"
-										className="max-h-32 object-contain"
-									/>
-								</div>
-							)}
 						</div>
 					))}
 				</div>
