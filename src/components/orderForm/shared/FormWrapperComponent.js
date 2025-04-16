@@ -8,7 +8,6 @@ import {CustomText} from "@/components/CustomText";
 import {FormContentComponent} from "./FormContentComponent";
 import {setSheetData} from "@/utils/spreadsheetHandler";
 
-const maxSteps = 4;
 export function FormWrapperComponent({
 	componentArray,
 	textObj,
@@ -27,7 +26,7 @@ export function FormWrapperComponent({
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	useEffect(() => {
-		if (step === maxSteps) {
+		if (step === componentArray.length + 1) {
 			validateForm(formData, setFormErrors);
 		}
 	}, [step]);
@@ -113,7 +112,7 @@ export function FormWrapperComponent({
 								}}
 							/>
 						)}
-						{step === maxSteps ? (
+						{step === componentArray.length + 1 ? (
 							<div className="ml-5">
 								<CustomButton
 									type={formErrors.length === 0 ? "primary" : "disabled"}

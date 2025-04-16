@@ -2,15 +2,13 @@
 
 import {useEffect, useState} from "react";
 import {FormWrapperComponent} from "../../components/orderForm/shared/FormWrapperComponent";
-import {StickerBasicInfoComponent} from "./components/StickerBasicInfo";
-import {StickerTypeComponent} from "./components/StickerTypeComponent";
-import {StickerDesignComponent} from "./components/StickerDesignComponent";
+import {CustomBasicInfoComponent} from "./components/CustomBasicInfo";
+import {CustomDesignComponent} from "./components/CustomDesignComponent";
 
-export default function StickersPage() {
+export default function ShirtPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
-		size: "Medium",
-		type: "Die Cut",
+		description: "",
 		design: null,
 		specialInstructions: "",
 		payment: "",
@@ -18,38 +16,34 @@ export default function StickersPage() {
 	});
 
 	const componentArray = [
-		<StickerBasicInfoComponent
+		<CustomBasicInfoComponent
 			key={0}
 			setFormData={setFormData}
 			formData={formData}
 			styles={styles}
 		/>,
-		<StickerTypeComponent
+		<CustomDesignComponent
 			key={1}
-			setFormData={setFormData}
-			formData={formData}
-			styles={styles}
-		/>,
-		<StickerDesignComponent
-			key={2}
 			setFormData={setFormData}
 			formData={formData}
 			styles={styles}
 		/>,
 	];
 
-	const titles = ["General Information", "Sticker Type", "Design", "Payment", "Confirmation"];
-	const progressTitles = ["General", "Type", "Design", "Payment", "Confirmation"];
+	const titles = ["General Information", "Design", "Payment", "Confirmation"];
+	const progressTitles = ["General", "Design", "Payment", "Confirmation"];
 	const descriptions = [
-		"Tell us about the basic information of your sticker order.",
-		"Choose from the following sticker types.",
-		"Upload a design for your sticker.",
+		"Tell us about the basic information of your custom order.",
+		"Upload a design for your custom order.",
 		"Describe your desired payment method.",
 		"Confirm your order details and submit the order form.",
 	];
 	const summaryInfo = [
-		{header: "General Information", fields: ["Quantity", "Size"], required: [true, true]},
-		{header: "Sticker Type", fields: ["Type"], required: [true]},
+		{
+			header: "General Information",
+			fields: ["Quantity", "Description"],
+			required: [true, true],
+		},
 		{header: "Design", fields: ["Design"], required: [false]},
 		{header: "Payment", fields: ["Email", "Payment"], required: [true, true]},
 	];
@@ -64,7 +58,7 @@ export default function StickersPage() {
 			}}
 			summaryInfo={summaryInfo}
 			styles={styles}
-			itemType={"sticker"}
+			itemType={"custom"}
 			formData={formData}
 			setFormData={setFormData}
 		/>

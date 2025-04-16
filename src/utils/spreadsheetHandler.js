@@ -45,6 +45,9 @@ export async function setSheetData(formData, itemType) {
 	if (itemType === "sticker") {
 		range = "Stickers!A1";
 	}
+	if (itemType === "custom") {
+		range = "Custom!A1";
+	}
 	await glSheets.spreadsheets.values.append({
 		auth: glAuth,
 		spreadsheetId: process.env.SPREADSHEET_ID,
@@ -54,7 +57,7 @@ export async function setSheetData(formData, itemType) {
 			values: [
 				Object.keys(formData).map((key) => {
 					if (key === "design" && formData[key] !== null) {
-						return formData[key].name;
+						return formData[key].base64;
 					} else {
 						return formData[key];
 					}

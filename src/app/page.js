@@ -41,7 +41,7 @@ export default function Home() {
 					name={"Custom Order"}
 					image={<ClipboardPen size={96} />}
 					description={"Create a custom order that fits your exact needs."}
-					link={"/"}
+					link={"/custom"}
 				/>
 			</motion.div>
 		</div>

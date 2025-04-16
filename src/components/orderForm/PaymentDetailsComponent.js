@@ -51,7 +51,7 @@ export function PaymentDetailsComponent({styles, setFormData, formData, onNext})
 				setEmailError("Please enter a valid email address");
 			}
 		}
-	}, []);
+	}, [formData.email]);
 
 	return (
 		<div className={`flex flex-col items-start justify-center w-full`}>

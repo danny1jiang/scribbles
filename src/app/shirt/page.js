@@ -6,8 +6,6 @@ import {ShirtBasicInfoComponent} from "./components/ShirtBasicInfo";
 import {ShirtMaterialsComponent} from "./components/ShirtMaterialsComponent";
 import {ShirtDesignComponent} from "./components/ShirtDesignComponent";
 
-const maxSteps = 4;
-
 export default function ShirtPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
@@ -21,9 +19,24 @@ export default function ShirtPage() {
 	});
 
 	const componentArray = [
-		<ShirtBasicInfoComponent setFormData={setFormData} formData={formData} styles={styles} />,
-		<ShirtMaterialsComponent setFormData={setFormData} formData={formData} styles={styles} />,
-		<ShirtDesignComponent setFormData={setFormData} formData={formData} styles={styles} />,
+		<ShirtBasicInfoComponent
+			key={0}
+			setFormData={setFormData}
+			formData={formData}
+			styles={styles}
+		/>,
+		<ShirtMaterialsComponent
+			key={1}
+			setFormData={setFormData}
+			formData={formData}
+			styles={styles}
+		/>,
+		<ShirtDesignComponent
+			key={2}
+			setFormData={setFormData}
+			formData={formData}
+			styles={styles}
+		/>,
 	];
 
 	const titles = ["General Information", "Material", "Design", "Payment", "Confirmation"];

@@ -3,18 +3,23 @@
 import {CustomText} from "@/components/CustomText";
 import {FileComponent} from "@/components/FileComponent";
 import {SelectComponent} from "@/components/SelectComponent";
-import {useState, useEffect} from "react";
-import Image from "next/image";
+import {useState, useEffect, useMemo, useCallback, memo} from "react";
 
-export function ShirtDesignComponent({setFormData, formData, styles}) {
+// Memoize the component to prevent unnecessary re-renders
+export const ShirtDesignComponent = memo(function ShirtDesignComponent({
+	setFormData,
+	formData,
+	styles
+}) {
 	const [selectedFile, setSelectedFile] = useState(null);
 	const [previewUrl, setPreviewUrl] = useState(null);
 	const [shirtColor, setShirtColor] = useState(formData.color || "White");
 
-	const colorOptions = ["White", "Black", "Navy", "Red", "Green", "Gray", "Blue", "Yellow"];
+	// Define static data with useMemo to prevent recreation on each render
+	const colorOptions = useMemo(() => ["White", "Black", "Navy", "Red", "Green", "Gray", "Blue", "Yellow"], []);
 
-	// Color hex values mapping for preview
-	const colorHexMap = {
+	// Color hex values mapping for preview - created once
+	const colorHexMap = useMemo(() => ({
 		White: "#FFFFFF",
 		Black: "#000000",
 		Navy: "#000080",
@@ -23,46 +28,55 @@ export function ShirtDesignComponent({setFormData, formData, styles}) {
 		Gray: "#808080",
 		Blue: "#0000FF",
 		Yellow: "#FFFF00",
-	};
+	}), []);
 
-	const handleFileChange = (file) => {
-		setSelectedFile(file);
-		setFormData({
-			...formData,
-			design: file,
-		});
+	// Use useCallback for event handlers to prevent recreation on each render
+	const handleFileChange = useCallback((fileInfo) => {
+		setSelectedFile(fileInfo);
+		setFormData(prev => ({
+			...prev,
+			design: fileInfo,
+		}));
 
-		// Create URL for preview
-		if (file) {
-			const fileUrl = URL.createObjectURL(file);
-			setPreviewUrl(fileUrl);
+		// Use the base64 data directly for preview
+		if (fileInfo && fileInfo.base64) {
+			setPreviewUrl(fileInfo.base64);
 		} else {
 			setPreviewUrl(null);
 		}
-	};
+	}, [setFormData]);
 
-	const handleColorChange = (color) => {
+	const handleColorChange = useCallback((color) => {
 		setShirtColor(color);
-		setFormData({
-			...formData,
+		setFormData(prev => ({
+			...prev,
 			color: color,
-		});
-	};
+		}));
+	}, [setFormData]);
 
 	// Clean up object URLs when component unmounts
 	useEffect(() => {
 		return () => {
-			if (previewUrl) {
+			// Only revoke URLs if they're not base64 data
+			if (previewUrl && previewUrl.startsWith("blob:")) {
 				URL.revokeObjectURL(previewUrl);
 			}
 		};
 	}, [previewUrl]);
 
+	// Load initial data only on mount or when essential props change
 	useEffect(() => {
 		if (formData.design) {
 			setSelectedFile(formData.design);
-			const fileUrl = URL.createObjectURL(formData.design);
-			setPreviewUrl(fileUrl);
+			// If it's already a base64 object with the proper format
+			if (formData.design.base64) {
+				setPreviewUrl(formData.design.base64);
+			}
+			// For backwards compatibility with old File objects
+			else if (formData.design instanceof File) {
+				const fileUrl = URL.createObjectURL(formData.design);
+				setPreviewUrl(fileUrl);
+			}
 		}
 
 		if (formData.color) {
@@ -70,12 +84,24 @@ export function ShirtDesignComponent({setFormData, formData, styles}) {
 		}
 	}, [formData.design, formData.color]);
 
+	// Memoize color buttons to prevent recreation
+	const colorButtons = useMemo(() => (
+		colorOptions.map((color) => (
+			<div
+				key={color}
+				onClick={() => handleColorChange(color)}
+				className={`w-8 h-8 rounded-full cursor-pointer border border-gray-300 ${
+					shirtColor === color ? "ring-2 ring-blue-500" : ""
+				}`}
+				style={{backgroundColor: colorHexMap[color]}}
+				title={color}
+			/>
+		))
+	), [colorOptions, colorHexMap, shirtColor, handleColorChange]);
+
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
 			<div className="flex flex-row w-full justify-between">
-				{" "}
-				{/* Remove items-stretch, let height be determined by children */}
-				{/* Upload Section - This will adapt to the height of its sibling */}
 				<div className="flex flex-col w-4/9">
 					<CustomText type={"medium"} className="mb-2">
 						Upload Your Design
@@ -93,23 +119,11 @@ export function ShirtDesignComponent({setFormData, formData, styles}) {
 					</CustomText>
 
 					<div className="flex flex-row flex-wrap mt-2 gap-2">
-						{colorOptions.map((color) => (
-							<div
-								key={color}
-								onClick={() => handleColorChange(color)}
-								className={`w-8 h-8 rounded-full cursor-pointer border border-gray-300 ${
-									shirtColor === color ? "ring-2 ring-blue-500" : ""
-								}`}
-								style={{backgroundColor: colorHexMap[color]}}
-								title={color}
-							/>
-						))}
+						{colorButtons}
 					</div>
 				</div>
-				{/* Preview Section - This has fixed height and will determine parent height */}
+				
 				<div className="flex flex-col w-4/9 h-80">
-					{" "}
-					{/* Set specific height here */}
 					<CustomText type={"medium"} className="mb-2">
 						Preview
 					</CustomText>
@@ -150,4 +164,4 @@ export function ShirtDesignComponent({setFormData, formData, styles}) {
 			</div>
 		</div>
 	);
-}
+});

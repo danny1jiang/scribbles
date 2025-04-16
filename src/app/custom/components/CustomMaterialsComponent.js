@@ -1,16 +1,16 @@
 import {CustomText} from "@/components/CustomText";
 import {SelectComponent} from "@/components/SelectComponent";
 
-export function StickerTypeComponent({setFormData, formData, styles}) {
+export function CustomMaterialsComponent({setFormData, formData, styles}) {
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
-			<CustomText type={"medium"}>Sticker Type</CustomText>
+			<CustomText type={"medium"}>Material</CustomText>
 			<SelectComponent
 				className={styles.textBox + " " + styles.textBoxNormal}
-				options={["Die Cut", "Sticker Sheet"]}
-				defaultValue={formData.type}
+				options={["Cotton", "Athletic", "Sweatshirt"]}
+				defaultValue={formData.material}
 				onChange={(selected) => {
-					setFormData({...formData, type: selected});
+					setFormData({...formData, material: selected});
 				}}
 			/>
 		</div>
