@@ -1,25 +1,62 @@
-import Image from "next/image";
+"use client";
+
+import {CustomText} from "@/components/CustomText";
+import {ClipboardPen, Shirt, StickyNote} from "lucide-react";
 import Link from "next/link";
+import {motion} from "framer-motion";
 
 export default function Home() {
 	return (
-		<div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-			<main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-				<Card name={"Stickers"} link={"/shirt"} />
-				<Card name={"Shirt"} link={"/shirt"} />
-				<Card name={"Custom Order"} link={"/shirt"} />
-			</main>
+		<div className="flex flex-col flex-1 items-center justify-center min-h-screen gap-[4rem] p-[3rem] font-[family-name:var(--font-geist-sans)] text-center">
+			<motion.div
+				transition={{duration: 0.5, type: "tween", delay: 0, ease: "easeOut"}}
+				animate={{y: 0, opacity: 1}}
+				initial={{y: 15, opacity: 0}}
+				className="flex flex-col items-center justify-center"
+			>
+				<CustomText type={"header"}>What would you like to order?</CustomText>
+				<CustomText type={"medium"}>
+					Choose one of the following options to begin your order.
+				</CustomText>
+			</motion.div>
+			<motion.div
+				transition={{duration: 0.5, type: "tween", delay: 0.1, ease: "easeOut"}}
+				animate={{y: 0, opacity: 1}}
+				initial={{y: 5, opacity: 0}}
+				className="flex flex-col md:flex-row w-full gap-[3rem] justify-center items-center"
+			>
+				<Card
+					name={"Shirt"}
+					image={<Shirt size={96} />}
+					description={"Design your own custom shirt with colors, design, and materials."}
+					link={"/shirt"}
+				/>
+				<Card
+					name={"Stickers"}
+					image={<StickyNote size={96} />}
+					description={"Order your own custom sticker in sticker sheets or dye cuts."}
+					link={"/stickers"}
+				/>
+				<Card
+					name={"Custom Order"}
+					image={<ClipboardPen size={96} />}
+					description={"Create a custom order that fits your exact needs."}
+					link={"/custom"}
+				/>
+			</motion.div>
 		</div>
 	);
 }
 
-function Card({name, link}) {
+function Card({name, description, image, link}) {
 	return (
 		<Link
-			className="flex flex-col justify-center items-center border-solid border-1 rounded-xl border-(--color-primary) w-[200px] h-[200px]"
+			className="flex flex-col justify-center items-center border-solid border-1 rounded-lg border-(--color-gray) w-8/10 md:w-5/20 md:h-[30rem] p-[2rem] text-center"
 			href={link}
 		>
-			{name}
+			<div className="mb-[2rem]">{image}</div>
+			<CustomText type={"header"}>{name}</CustomText>
+			<CustomText type={"medium"}>{description}</CustomText>
 		</Link>
 	);
 }

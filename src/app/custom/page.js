@@ -2,56 +2,49 @@
 
 import {useEffect, useState} from "react";
 import {FormWrapperComponent} from "../../components/orderForm/shared/FormWrapperComponent";
-import {ShirtBasicInfoComponent} from "./components/ShirtBasicInfo";
-import {ShirtMaterialsComponent} from "./components/ShirtMaterialsComponent";
-import {ShirtDesignComponent} from "./components/ShirtDesignComponent";
+import {CustomBasicInfoComponent} from "./components/CustomBasicInfo";
+import {CustomDesignComponent} from "./components/CustomDesignComponent";
 
 export default function ShirtPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
-		size: "Medium",
-		material: "Cotton",
+		description: "",
 		design: null,
-		color: "White",
 		specialInstructions: "",
 		payment: "",
 		email: "",
 	});
 
 	const componentArray = [
-		<ShirtBasicInfoComponent
+		<CustomBasicInfoComponent
 			key={0}
 			setFormData={setFormData}
 			formData={formData}
 			styles={styles}
 		/>,
-		<ShirtMaterialsComponent
+		<CustomDesignComponent
 			key={1}
-			setFormData={setFormData}
-			formData={formData}
-			styles={styles}
-		/>,
-		<ShirtDesignComponent
-			key={2}
 			setFormData={setFormData}
 			formData={formData}
 			styles={styles}
 		/>,
 	];
 
-	const titles = ["General Information", "Material", "Design", "Payment", "Confirmation"];
-	const progressTitles = ["General", "Materials", "Design", "Payment", "Confirmation"];
+	const titles = ["General Information", "Design", "Payment", "Confirmation"];
+	const progressTitles = ["General", "Design", "Payment", "Confirmation"];
 	const descriptions = [
-		"Tell us about the basic information of your shirt order.",
-		"Choose from the following materials for your shirt.",
-		"Upload your design and see how it will look on your shirt.",
+		"Tell us about the basic information of your custom order.",
+		"Upload a design for your custom order.",
 		"Describe your desired payment method.",
 		"Confirm your order details and submit the order form.",
 	];
 	const summaryInfo = [
-		{header: "General Information", fields: ["Quantity", "Size"], required: [true, true]},
-		{header: "Material", fields: ["Material"], required: [true]},
-		{header: "Design", fields: ["Design", "Color"], required: [false, false]},
+		{
+			header: "General Information",
+			fields: ["Quantity", "Description"],
+			required: [true, true],
+		},
+		{header: "Design", fields: ["Design"], required: [false]},
 		{header: "Payment", fields: ["Email", "Payment"], required: [true, true]},
 	];
 
@@ -65,7 +58,7 @@ export default function ShirtPage() {
 			}}
 			summaryInfo={summaryInfo}
 			styles={styles}
-			itemType={"shirt"}
+			itemType={"custom"}
 			formData={formData}
 			setFormData={setFormData}
 		/>

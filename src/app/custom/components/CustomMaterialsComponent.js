@@ -1,7 +1,7 @@
 import {CustomText} from "@/components/CustomText";
 import {SelectComponent} from "@/components/SelectComponent";
 
-export function MaterialsComponent({setFormData, formData, styles}) {
+export function CustomMaterialsComponent({setFormData, formData, styles}) {
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
 			<CustomText type={"medium"}>Material</CustomText>

@@ -2,36 +2,35 @@
 
 import {useEffect, useState} from "react";
 import {FormWrapperComponent} from "../../components/orderForm/shared/FormWrapperComponent";
-import {ShirtBasicInfoComponent} from "./components/ShirtBasicInfo";
-import {ShirtMaterialsComponent} from "./components/ShirtMaterialsComponent";
-import {ShirtDesignComponent} from "./components/ShirtDesignComponent";
+import {StickerBasicInfoComponent} from "./components/StickerBasicInfo";
+import {StickerTypeComponent} from "./components/StickerTypeComponent";
+import {StickerDesignComponent} from "./components/StickerDesignComponent";
 
-export default function ShirtPage() {
+export default function StickersPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
 		size: "Medium",
-		material: "Cotton",
+		type: "Die Cut",
 		design: null,
-		color: "White",
 		specialInstructions: "",
 		payment: "",
 		email: "",
 	});
 
 	const componentArray = [
-		<ShirtBasicInfoComponent
+		<StickerBasicInfoComponent
 			key={0}
 			setFormData={setFormData}
 			formData={formData}
 			styles={styles}
 		/>,
-		<ShirtMaterialsComponent
+		<StickerTypeComponent
 			key={1}
 			setFormData={setFormData}
 			formData={formData}
 			styles={styles}
 		/>,
-		<ShirtDesignComponent
+		<StickerDesignComponent
 			key={2}
 			setFormData={setFormData}
 			formData={formData}
@@ -39,19 +38,19 @@ export default function ShirtPage() {
 		/>,
 	];
 
-	const titles = ["General Information", "Material", "Design", "Payment", "Confirmation"];
-	const progressTitles = ["General", "Materials", "Design", "Payment", "Confirmation"];
+	const titles = ["General Information", "Sticker Type", "Design", "Payment", "Confirmation"];
+	const progressTitles = ["General", "Type", "Design", "Payment", "Confirmation"];
 	const descriptions = [
-		"Tell us about the basic information of your shirt order.",
-		"Choose from the following materials for your shirt.",
-		"Upload your design and see how it will look on your shirt.",
+		"Tell us about the basic information of your sticker order.",
+		"Choose from the following sticker types.",
+		"Upload a design for your sticker.",
 		"Describe your desired payment method.",
 		"Confirm your order details and submit the order form.",
 	];
 	const summaryInfo = [
 		{header: "General Information", fields: ["Quantity", "Size"], required: [true, true]},
-		{header: "Material", fields: ["Material"], required: [true]},
-		{header: "Design", fields: ["Design", "Color"], required: [false, false]},
+		{header: "Sticker Type", fields: ["Type"], required: [true]},
+		{header: "Design", fields: ["Design"], required: [false]},
 		{header: "Payment", fields: ["Email", "Payment"], required: [true, true]},
 	];
 
@@ -65,7 +64,7 @@ export default function ShirtPage() {
 			}}
 			summaryInfo={summaryInfo}
 			styles={styles}
-			itemType={"shirt"}
+			itemType={"sticker"}
 			formData={formData}
 			setFormData={setFormData}
 		/>

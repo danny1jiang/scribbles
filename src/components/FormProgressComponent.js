@@ -52,7 +52,7 @@ export function FormProgressComponent({steps, currentStep, onClick}) {
 		<div className="flex flex-col items-center w-full mb-6">
 			<div className="relative w-full max-w-4xl">
 				{/* Progress lines - adjusted to align with circle centers */}
-				<div className="absolute top-4 w-[calc(100%-8px)] left-[4px]">
+				<div className="absolute top-5 w-[calc(100%-8px)] left-[4px]">
 					{/* Background line (gray) */}
 					<div className="absolute h-1 bg-(--color-light-gray) w-full"></div>
 
@@ -82,7 +82,7 @@ export function FormProgressComponent({steps, currentStep, onClick}) {
 							}
 						>
 							<div
-								className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors duration-200 ${
+								className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors duration-200 border-6 border-white ${
 									highlightedCircles[index]
 										? "bg-(--color-secondary) text-white"
 										: "bg-(--color-light-gray)"
@@ -91,7 +91,7 @@ export function FormProgressComponent({steps, currentStep, onClick}) {
 
 							<CustomText
 								type={"small"}
-								className={`text-center top-8 absolute transition-colors duration-200 select-none ${
+								className={`text-center top-9 absolute transition-colors duration-200 select-none ${
 									highlightedCircles[index]
 										? "text-(--color-primary)"
 										: "text-(--color-accent)"
