@@ -11,6 +11,8 @@ export function FormContentComponent({
 	setFormData,
 	step,
 	components,
+	itemType,
+	onBack,
 }) {
 	for (let i = 0; i < components.length; i++) {
 		if (step === i) {
@@ -32,6 +34,8 @@ export function FormContentComponent({
 				summaryInfo={summaryInfo}
 				setFormData={setFormData}
 				formData={formData}
+				itemType={itemType}
+				onBack={onBack}
 			/>
 		);
 	}
