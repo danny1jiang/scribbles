@@ -27,19 +27,19 @@ export default function Home() {
 			>
 				<Card
 					name={"Shirt"}
-					image={<Shirt size={96} />}
+					image={<Shirt size={80} strokeWidth={1.5} color="white" />}
 					description={"Design your own custom shirt with colors, design, and materials."}
 					link={"/shirt"}
 				/>
 				<Card
 					name={"Stickers"}
-					image={<StickyNote size={96} />}
+					image={<StickyNote size={80} strokeWidth={1.5} color="white" />}
 					description={"Order your own custom sticker in sticker sheets or dye cuts."}
 					link={"/stickers"}
 				/>
 				<Card
 					name={"Custom Order"}
-					image={<ClipboardPen size={96} />}
+					image={<ClipboardPen size={80} strokeWidth={1.5} color="white" />}
 					description={"Create a custom order that fits your exact needs."}
 					link={"/custom"}
 				/>
@@ -51,10 +51,10 @@ export default function Home() {
 function Card({name, description, image, link}) {
 	return (
 		<Link
-			className="flex flex-col justify-center items-center border-solid border-1 rounded-lg border-(--color-gray) w-8/10 md:w-5/20 md:h-[30rem] p-[2rem] text-center"
+			className="flex flex-col justify-center items-center border-solid border-1 rounded-xl border-(--color-gray) w-8/10 md:w-5/20 md:h-[30rem] p-[2rem] text-center transition-all duration-200 hover:shadow-md hover:scale-102"
 			href={link}
 		>
-			<div className="mb-[2rem]">{image}</div>
+			<div className="mb-[2rem] bg-(--color-primary) rounded-full p-5">{image}</div>
 			<CustomText type={"header"}>{name}</CustomText>
 			<CustomText type={"medium"}>{description}</CustomText>
 		</Link>

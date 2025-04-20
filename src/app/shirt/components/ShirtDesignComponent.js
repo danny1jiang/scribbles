@@ -181,7 +181,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 					Choose Shirt Color
 				</CustomText>
 
-				<div className="flex flex-row flex-wrap mt-2 gap-2">{colorButtons}</div>
+				<div className="flex flex-row flex-wrap mt-2 mb-4 gap-2">{colorButtons}</div>
 			</div>
 		</div>
 	);
