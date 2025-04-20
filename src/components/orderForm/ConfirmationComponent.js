@@ -62,8 +62,8 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 		}
 
 		// Add generic error for required fields
-		if (!isFormValid && formData?.email) {
-			errors.push("Please fill in all required fields");
+		if (!isFormValid) {
+			errors.push("Please fill in all required fields (*)");
 		}
 
 		setFormErrors(errors);
@@ -104,8 +104,10 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 			setShowErrorBanner(false);
 
 			// Show success alert
-			alert("Your order has been submitted successfully!");
-			router.back();
+			//alert("You have successfully submitted your order form!");
+			setTimeout(() => {
+				router.back();
+			}, 1000);
 		} catch (error) {
 			console.error("Error submitting form:", error);
 			setFormErrors([
@@ -166,43 +168,13 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 		if (value) {
 			return <CustomText>{value}</CustomText>;
 		} else {
-			return (
-				<CustomText className={isMissingField ? "text-[#CC0033]" : ""}>
-					{isMissingField ? "Required field" : "Not provided"}
-				</CustomText>
-			);
+			return <CustomText className="text-[#CC0033]">Not Provided</CustomText>;
 		}
-	};
-
-	// Check if any field in a section is missing
-	const isSectionMissing = (fields) => {
-		return fields.some((field, index) => {
-			const fieldName = field.toLowerCase();
-			return isMissing[fieldName];
-		});
 	};
 
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
 			<div className="flex flex-col w-full">
-				{showErrorBanner && formErrors.length > 0 && (
-					<div className="bg-[#FFEEEE] border border-[#CC0033] p-4 rounded-lg mb-4">
-						{formErrors.map((error, index) => (
-							<CustomText key={index} type="medium" className="text-[#CC0033]">
-								{error}
-							</CustomText>
-						))}
-					</div>
-				)}
-
-				{submissionSuccess && (
-					<div className="bg-[#EEFFEE] border border-[#00CC33] p-4 rounded-lg mb-4">
-						<CustomText type="medium" className="text-[#00CC33]">
-							Your order has been submitted successfully!
-						</CustomText>
-					</div>
-				)}
-
 				<div className="flex flex-col mb-6 rounded-lg gap-10">
 					{summaryInfo.map((section, sectionIndex) => (
 						<div key={sectionIndex}>
@@ -241,6 +213,24 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 						</div>
 					))}
 				</div>
+
+				{showErrorBanner && formErrors.length > 0 && (
+					<div className="bg-[#FFEEEE] border border-[#CC0033] p-4 rounded-lg mb-8">
+						{formErrors.map((error, index) => (
+							<CustomText key={index} type="medium" className="text-[#CC0033]">
+								{error}
+							</CustomText>
+						))}
+					</div>
+				)}
+
+				{submissionSuccess && (
+					<div className="bg-[#EEFFEE] border border-[#00CC33] p-4 rounded-lg mb-8">
+						<CustomText type="medium" className="text-[#00CC33]">
+							Your order has been submitted successfully!
+						</CustomText>
+					</div>
+				)}
 
 				{/* Special Instructions Section - Always at the end */}
 				<div className="flex flex-col w-full">
