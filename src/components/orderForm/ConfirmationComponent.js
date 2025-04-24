@@ -115,7 +115,6 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 				"There was an error submitting your order. Please try again.",
 			]);
 			setShowErrorBanner(true);
-		} finally {
 			setIsSubmitting(false);
 		}
 	};
@@ -261,7 +260,7 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 						<CustomButton
 							type={isFormValid ? "primary" : "disabled"}
 							text={isSubmitting ? "Submitting..." : "Submit"}
-							onClick={handleSubmit}
+							onClick={isSubmitting ? null : handleSubmit}
 							disabled={isSubmitting || !isFormValid}
 						/>
 					</div>
