@@ -2,21 +2,39 @@
 
 import {useState, useEffect, useMemo} from "react";
 import {CustomText} from "@/components/CustomText";
+import {CustomButton} from "@/components/CustomButton";
+import {setSheetData} from "@/utils/spreadsheetHandler";
+import {useRouter} from "next/navigation";
 
-export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
+export function ConfirmationComponent({summaryInfo, formData, setFormData, itemType, onBack}) {
 	const [instructions, setInstructions] = useState(formData?.specialInstructions || "");
 	const [charCount, setCharCount] = useState(formData?.specialInstructions?.length || 0);
 	const maxChars = 500;
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [formErrors, setFormErrors] = useState([]);
+	const [showErrorBanner, setShowErrorBanner] = useState(false);
+	const [submissionSuccess, setSubmissionSuccess] = useState(false);
+	const router = useRouter();
+
+	// Email validation function
+	const validateEmail = (email) => {
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return emailRegex.test(email);
+	};
 
 	// Dynamically build the isMissing object based on summaryInfo
 	const isMissing = useMemo(() => {
-		const result = {email: !formData?.email}; // Always include email as it's not always in summaryInfo
+		const result = {email: !formData?.email || !validateEmail(formData?.email)}; // Always include email validation
 
 		// Extract all fields from summaryInfo and check if they're missing
 		summaryInfo.forEach((section) => {
-			section.fields.forEach((field) => {
+			section.fields.forEach((field, index) => {
 				const fieldName = field.toLowerCase();
-				if (fieldName === "payment") {
+				const isRequired = section.required[index];
+
+				if (!isRequired) {
+					result[fieldName] = false; // Not required, so not missing
+				} else if (fieldName === "payment") {
 					result[fieldName] = !formData?.[fieldName] || formData[fieldName].trim() === "";
 				} else if (fieldName === "design") {
 					result[fieldName] = !formData?.[fieldName];
@@ -29,12 +47,75 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
 		return result;
 	}, [formData, summaryInfo]);
 
+	// Check if form is valid
+	const isFormValid = useMemo(() => {
+		return !Object.values(isMissing).some((value) => value === true);
+	}, [isMissing]);
+
+	// Validate form and set errors
+	useEffect(() => {
+		const errors = [];
+
+		// Check email specifically
+		if (formData?.email && !validateEmail(formData.email)) {
+			errors.push("Please enter a valid email address");
+		}
+
+		// Add generic error for required fields
+		if (!isFormValid) {
+			errors.push("Please fill in all required fields (*)");
+		}
+
+		setFormErrors(errors);
+
+		// Show error banner if there are errors and the user has tried to submit
+		if (errors.length > 0) {
+			setShowErrorBanner(true);
+		}
+	}, [formData, isFormValid]);
+
 	const handleInstructionsChange = (e) => {
 		const text = e.target.value;
 		if (text.length <= maxChars) {
 			setInstructions(text);
 			setFormData({...formData, specialInstructions: text});
 			setCharCount(text.length);
+		}
+	};
+
+	// Form submission handler
+	const handleSubmit = async () => {
+		if (!isFormValid) {
+			setShowErrorBanner(true);
+			return;
+		}
+
+		setIsSubmitting(true);
+
+		try {
+			// Clone form data to avoid modifying the original
+			const submissionData = {...formData};
+
+			// Submit the data
+			await setSheetData(submissionData, itemType);
+
+			// Handle success
+			setSubmissionSuccess(true);
+			setShowErrorBanner(false);
+
+			// Show success alert
+			//alert("You have successfully submitted your order form!");
+			setTimeout(() => {
+				router.back();
+			}, 1000);
+		} catch (error) {
+			console.error("Error submitting form:", error);
+			setFormErrors([
+				...formErrors,
+				"There was an error submitting your order. Please try again.",
+			]);
+			setShowErrorBanner(true);
+			setIsSubmitting(false);
 		}
 	};
 
@@ -50,6 +131,7 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
 	const getFieldValue = (field) => {
 		const fieldName = field.toLowerCase();
 		const value = formData?.[fieldName];
+		const isMissingField = isMissing[fieldName];
 
 		if (fieldName === "design" && value) {
 			return value.name;
@@ -85,13 +167,8 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
 		if (value) {
 			return <CustomText>{value}</CustomText>;
 		} else {
-			return <CustomText>Not provided</CustomText>;
+			return <CustomText className="text-[#CC0033]">Not Provided</CustomText>;
 		}
-	};
-
-	// Check if any field in a section is missing
-	const isSectionMissing = (fields) => {
-		return fields.some((field) => isMissing[field.toLowerCase()]);
 	};
 
 	return (
@@ -104,7 +181,6 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
 								<CustomText type={"medium"} className="text-lg">
 									{section.header}
 								</CustomText>
-								{isSectionMissing(section.fields)}
 							</div>
 							<div className="border-(--color-light-gray) border-1 mb-2" />
 							<div className="flex flex-row justify-between items-start">
@@ -137,6 +213,24 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
 					))}
 				</div>
 
+				{showErrorBanner && formErrors.length > 0 && (
+					<div className="bg-[#FFEEEE] border border-[#CC0033] p-4 rounded-lg mb-8">
+						{formErrors.map((error, index) => (
+							<CustomText key={index} type="medium" className="text-[#CC0033]">
+								{error}
+							</CustomText>
+						))}
+					</div>
+				)}
+
+				{submissionSuccess && (
+					<div className="bg-[#EEFFEE] border border-[#00CC33] p-4 rounded-lg mb-8">
+						<CustomText type="medium" className="text-[#00CC33]">
+							Your order has been submitted successfully!
+						</CustomText>
+					</div>
+				)}
+
 				{/* Special Instructions Section - Always at the end */}
 				<div className="flex flex-col w-full">
 					<CustomText type={"medium"} className="mb-2">
@@ -156,6 +250,19 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData}) {
 								{charCount}/{maxChars} characters
 							</CustomText>
 						</div>
+					</div>
+				</div>
+
+				{/* Form Buttons */}
+				<div className="flex flex-row justify-end items-center w-full mt-6">
+					<CustomButton text={"Back"} onClick={onBack} />
+					<div className="ml-5">
+						<CustomButton
+							type={isFormValid ? "primary" : "disabled"}
+							text={isSubmitting ? "Submitting..." : "Submit"}
+							onClick={isSubmitting ? null : handleSubmit}
+							disabled={isSubmitting || !isFormValid}
+						/>
 					</div>
 				</div>
 			</div>
