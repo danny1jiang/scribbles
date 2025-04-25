@@ -106,7 +106,7 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 			// Show success alert
 			//alert("You have successfully submitted your order form!");
 			setTimeout(() => {
-				router.back();
+				router.push("/");
 			}, 1000);
 		} catch (error) {
 			console.error("Error submitting form:", error);
