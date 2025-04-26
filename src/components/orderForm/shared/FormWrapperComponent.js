@@ -70,7 +70,7 @@ export function FormWrapperComponent({
 					itemType={itemType}
 				/>
 
-				<div className="flex flex-row justify-end items-center w-full mt-6">
+				<div className="flex flex-row justify-end items-center w-full mt-10">
 					{step === 0 ? (
 						<CustomButton text={"Back"} href={"/"} />
 					) : (
