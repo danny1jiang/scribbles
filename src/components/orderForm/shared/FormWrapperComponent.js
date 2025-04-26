@@ -18,9 +18,7 @@ export function FormWrapperComponent({
 }) {
 	const [step, setStep] = useState(0);
 	const [title, setTitle] = useState("General Information");
-	const [description, setDescription] = useState(
-		"Tell us about the basic information of your shirt order."
-	);
+	const [description, setDescription] = useState(getDefaultDescription(itemType));
 
 	function handleNext() {
 		setStep(step + 1);
@@ -35,6 +33,19 @@ export function FormWrapperComponent({
 	function handleTitleChange(step) {
 		setTitle(textObj.titles[step]);
 		setDescription(textObj.descriptions[step]);
+	}
+
+	function getDefaultDescription(itemType) {
+		switch (itemType) {
+			case "shirt":
+				return "Tell us about the basic information of your shirt order.";
+			case "sticker":
+				return "Tell us about the basic information of your sticker order.";
+			case "custom":
+				return "Tell us about the basic information of your custom order.";
+			default:
+				return "Tell us about the basic information of your order.";
+		}
 	}
 
 	// Generate the content based on the current step
