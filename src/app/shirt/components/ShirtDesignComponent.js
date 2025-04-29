@@ -11,8 +11,16 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 	formData,
 	styles,
 }) {
-	const [selectedFile, setSelectedFile] = useState(null);
-	const [previewUrl, setPreviewUrl] = useState(null);
+	// State for front/back view
+	const [designView, setDesignView] = useState("front"); // 'front' or 'back'
+
+	// State for files and previews for both views
+	const [selectedFiles, setSelectedFiles] = useState({
+		front: formData.front,
+		back: formData.back,
+	});
+	const [previewUrls, setPreviewUrls] = useState({front: null, back: null});
+
 	const [shirtColor, setShirtColor] = useState(formData.color || "White");
 
 	// Define static data with useMemo to prevent recreation on each render
@@ -31,20 +39,22 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 	// Use useCallback for event handlers to prevent recreation on each render
 	const handleFileChange = useCallback(
 		(fileInfo) => {
-			setSelectedFile(fileInfo);
+			// Update state for the current view
+			setSelectedFiles((prev) => ({...prev, [designView]: fileInfo}));
 			setFormData((prev) => ({
 				...prev,
-				design: fileInfo,
+				// Store design based on view
+				[designView === "front" ? "front" : "back"]: fileInfo,
 			}));
 
 			// Use the base64 data directly for preview
 			if (fileInfo && fileInfo.base64) {
-				setPreviewUrl(fileInfo.base64);
+				setPreviewUrls((prev) => ({...prev, [designView]: fileInfo.base64}));
 			} else {
-				setPreviewUrl(null);
+				setPreviewUrls((prev) => ({...prev, [designView]: null}));
 			}
 		},
-		[setFormData]
+		[setFormData, designView] // Add designView dependency
 	);
 
 	const handleColorChange = useCallback(
@@ -58,35 +68,52 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 		[setFormData]
 	);
 
-	// Clean up object URLs when component unmounts
+	// Clean up object URLs when component unmounts or URLs change
 	useEffect(() => {
+		const frontUrl = previewUrls.front;
+		const backUrl = previewUrls.back;
 		return () => {
 			// Only revoke URLs if they're not base64 data
-			if (previewUrl && previewUrl.startsWith("blob:")) {
-				URL.revokeObjectURL(previewUrl);
+			if (frontUrl && frontUrl.startsWith("blob:")) {
+				URL.revokeObjectURL(frontUrl);
+			}
+			if (backUrl && backUrl.startsWith("blob:")) {
+				URL.revokeObjectURL(backUrl);
 			}
 		};
-	}, [previewUrl]);
+	}, [previewUrls]);
 
 	// Load initial data only on mount or when essential props change
 	useEffect(() => {
-		if (formData.design) {
-			setSelectedFile(formData.design);
-			// If it's already a base64 object with the proper format
-			if (formData.design.base64) {
-				setPreviewUrl(formData.design.base64);
-			}
-			// For backwards compatibility with old File objects
-			else if (formData.design instanceof File) {
-				const fileUrl = URL.createObjectURL(formData.design);
-				setPreviewUrl(fileUrl);
+		const initialFiles = {front: null, back: null};
+		const initialPreviews = {front: null, back: null};
+
+		if (formData.front) {
+			initialFiles.front = formData.front;
+			if (formData.front.base64) {
+				initialPreviews.front = formData.front.base64;
+			} else if (formData.front instanceof File) {
+				initialPreviews.front = URL.createObjectURL(formData.front);
 			}
 		}
+
+		if (formData.back) {
+			initialFiles.back = formData.back;
+			if (formData.back.base64) {
+				initialPreviews.back = formData.back.base64;
+			} else if (formData.back instanceof File) {
+				initialPreviews.back = URL.createObjectURL(formData.back);
+			}
+		}
+
+		setSelectedFiles(initialFiles);
+		setPreviewUrls(initialPreviews);
 
 		if (formData.color) {
 			setShirtColor(formData.color);
 		}
-	}, [formData.design, formData.color]);
+		// Only depend on the initial formData properties, not the whole object
+	}, [formData.front, formData.back, formData.color]);
 
 	// Memoize color buttons to prevent recreation
 	const colorButtons = useMemo(
@@ -110,23 +137,56 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 			<div className="flex flex-row w-full justify-between">
 				<div className="flex flex-col w-4/9">
 					<CustomText type={"medium"} className="mb-2">
-						Upload Your Design
+						{/* Dynamically update title based on view */}
+						Upload Your {designView === "front" ? "Front" : "Back"} Design
 					</CustomText>
 					<div className="flex-grow">
 						<FileComponent
 							className="h-full"
 							onChange={handleFileChange}
-							file={formData.design}
+							// Pass the file for the current view
+							file={selectedFiles[designView]}
 						/>
 					</div>
 				</div>
 
+				{/* Pass the correct preview URL based on the view */}
 				<ShirtDesign
 					shirtColor={shirtColor}
-					previewUrl={previewUrl}
+					previewUrl={previewUrls[designView]}
 					colorHexMap={colorHexMap}
+					designView={designView} // Pass the view to the preview component
 				/>
 			</div>
+
+			{/* Modern Toggle Switch for Front/Back View */}
+			<div className="flex justify-start mt-4 mb-4 bg-(--color-light-gray) rounded-full pl-1 pr-1">
+				<div className="relative flex w-40 pt-1 pb-1">
+					<button
+						onClick={() => setDesignView("front")}
+						className={`relative z-10 flex-1 py-1 text-center rounded-full transition-colors duration-300 ease-in-out ${
+							designView === "front" ? "text-white" : "text-gray-600"
+						}`}
+					>
+						Front
+					</button>
+					<button
+						onClick={() => setDesignView("back")}
+						className={`relative z-10 flex-1 py-1 text-center rounded-full transition-colors duration-300 ease-in-out ${
+							designView === "back" ? "text-white" : "text-gray-600"
+						}`}
+					>
+						Back
+					</button>
+					<span
+						className={`absolute top-1 bottom-1 w-1/2 bg-(--color-primary) rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
+							designView === "front" ? "translate-x-0" : "translate-x-full"
+						}`}
+						aria-hidden="true"
+					/>
+				</div>
+			</div>
+
 			<div className="w-full z-10">
 				<CustomText type={"medium"} className="mb-2 mt-4">
 					Sleeve Length
@@ -154,11 +214,12 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 	);
 });
 
-function ShirtDesign({shirtColor, previewUrl, colorHexMap, isFront}) {
+function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView}) {
 	return (
 		<div className="flex flex-col w-4/9 h-80">
 			<CustomText type={"medium"} className="mb-2">
-				Preview
+				{/* Update preview title based on view */}
+				{designView === "front" ? "Front" : "Back"} Preview
 			</CustomText>
 			<div className="flex flex-col items-center justify-center w-full h-full shadow-lg rounded-lg p-4 bg-white">
 				<div className="relative w-full h-40 flex items-center justify-center">

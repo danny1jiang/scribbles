@@ -133,7 +133,7 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 		const value = formData?.[fieldName];
 		const isMissingField = isMissing[fieldName];
 
-		if (fieldName === "design" && value) {
+		if ((fieldName === "design" || fieldName === "front" || fieldName === "back") && value) {
 			return value.name;
 		}
 

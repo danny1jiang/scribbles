@@ -64,7 +64,10 @@ export async function setSheetData(formData, itemType) {
 					[
 						"",
 						...Object.keys(formData).map((key) => {
-							if (key === "design" && formData[key] !== null) {
+							if (
+								(key === "design" || key === "front" || key === "back") &&
+								formData[key] !== null
+							) {
 								return "Design attached in note"; // Placeholder text in the cell
 							} else {
 								return formData[key];
@@ -76,7 +79,23 @@ export async function setSheetData(formData, itemType) {
 		});
 
 		// If there's design data, add it as a note
+		let designDataArr = [];
+		let designDataNames = [];
 		if (formData.design && formData.design !== null) {
+			designDataArr.push(formData.design);
+			designDataNames.push("design");
+		}
+		if (formData.front && formData.front !== null) {
+			designDataArr.push(formData.front);
+			designDataNames.push("front");
+		}
+		if (formData.back && formData.back !== null) {
+			designDataArr.push(formData.back);
+			designDataNames.push("back");
+		}
+		for (let i = 0; i < designDataArr.length; i++) {
+			const designData = designDataArr[i];
+			const designDataName = designDataNames[i];
 			// Get the row number of the newly added row
 			const updatedRange = response.data.updates.updatedRange;
 
@@ -88,19 +107,7 @@ export async function setSheetData(formData, itemType) {
 				const rowNumber = rowMatch[4];
 
 				// Find the column index for design
-				const designIndex = Object.keys(formData).indexOf("design") + 1;
-
-				// Rest of your code remains the same...
-
-				// Prepare design data - handle different possible formats
-				let designData;
-				if (typeof formData.design === "object" && formData.design.base64) {
-					designData = formData.design.base64;
-				} else if (typeof formData.design === "string") {
-					designData = formData.design;
-				} else {
-					designData = JSON.stringify(formData.design);
-				}
+				const designIndex = Object.keys(formData).indexOf(designDataName) + 1;
 
 				// Get sheet ID
 				const sheetId = await getSheetIdByName(
@@ -128,7 +135,7 @@ export async function setSheetData(formData, itemType) {
 										{
 											values: [
 												{
-													note: designData,
+													note: designData.base64,
 												},
 											],
 										},
