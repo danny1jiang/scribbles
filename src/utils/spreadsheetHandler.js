@@ -61,18 +61,20 @@ export async function setSheetData(formData, itemType) {
 			valueInputOption: "USER_ENTERED",
 			requestBody: {
 				values: [
-					Object.keys(formData).map((key) => {
-						if (key === "design" && formData[key] !== null) {
-							return "Design attached in note"; // Placeholder text in the cell
-						} else {
-							return formData[key];
-						}
-					}),
+					[
+						"",
+						...Object.keys(formData).map((key) => {
+							if (key === "design" && formData[key] !== null) {
+								return "Design attached in note"; // Placeholder text in the cell
+							} else {
+								return formData[key];
+							}
+						}),
+					],
 				],
 			},
 		});
 
-		// If there's design data, add it as a note
 		// If there's design data, add it as a note
 		if (formData.design && formData.design !== null) {
 			// Get the row number of the newly added row
@@ -86,7 +88,7 @@ export async function setSheetData(formData, itemType) {
 				const rowNumber = rowMatch[4];
 
 				// Find the column index for design
-				const designIndex = Object.keys(formData).indexOf("design");
+				const designIndex = Object.keys(formData).indexOf("design") + 1;
 
 				// Rest of your code remains the same...
 

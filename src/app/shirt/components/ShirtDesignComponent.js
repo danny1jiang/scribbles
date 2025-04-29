@@ -14,25 +14,16 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 	const [selectedFile, setSelectedFile] = useState(null);
 	const [previewUrl, setPreviewUrl] = useState(null);
 	const [shirtColor, setShirtColor] = useState(formData.color || "White");
-	const [isFront, setIsFront] = useState(true);
 
 	// Define static data with useMemo to prevent recreation on each render
-	const colorOptions = useMemo(
-		() => ["White", "Black", "Navy", "Red", "Green", "Gray", "Blue", "Yellow"],
-		[]
-	);
+	const colorOptions = useMemo(() => ["White", "Gray", "Navy"], []);
 
 	// Color hex values mapping for preview - created once
 	const colorHexMap = useMemo(
 		() => ({
-			White: "#FFFFFF",
-			Black: "#000000",
-			Navy: "#000080",
-			Red: "#FF0000",
-			Green: "#008000",
-			Gray: "#808080",
-			Blue: "#0000FF",
-			Yellow: "#FFFF00",
+			White: "#ffffff",
+			Gray: "#999999",
+			Navy: "#00467f",
 		}),
 		[]
 	);
@@ -138,40 +129,16 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 			</div>
 			<div className="w-full z-10">
 				<CustomText type={"medium"} className="mb-2 mt-4">
-					Select Side
+					Sleeve Length
 				</CustomText>
-				{/*<div className="flex flex-row w-1/2">
-					<button
-						onClick={() => setIsFront(true)}
-						className={
-							"rounded-l-xl bg-(--color-light-gray)" +
-							classNames.sideButton +
-							" " +
-							getSelectedButtonStyle(isFront)
-						}
-					>
-						<CustomText>Front</CustomText>
-					</button>
-					<button
-						onClick={() => setIsFront(false)}
-						className={
-							"rounded-r-xl bg-(--color-light-gray)" +
-							classNames.sideButton +
-							" " +
-							getSelectedButtonStyle(!isFront)
-						}
-					>
-						<CustomText>Back</CustomText>
-					</button>
-				</div>*/}
 				<SelectComponent
 					className={styles.textBox + " " + styles.textBoxNormal}
-					options={["Front", "Back"]}
-					defaultValue={formData.side}
+					options={["Short Sleeve", "Long Sleeve"]}
+					defaultValue={formData.sleeve}
 					onChange={(value) => {
 						setFormData((prev) => ({
 							...prev,
-							side: value,
+							sleeve: value,
 						}));
 					}}
 				/>
@@ -229,15 +196,3 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, isFront}) {
 		</div>
 	);
 }
-
-function getSelectedButtonStyle(display) {
-	if (display) {
-		return "bg-(--color-accent) text-white";
-	} else {
-		return;
-	}
-}
-
-const classNames = {
-	sideButton: "cursor-pointer w-full p-2",
-};

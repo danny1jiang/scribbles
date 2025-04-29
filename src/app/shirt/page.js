@@ -12,7 +12,7 @@ export default function ShirtPage() {
 		size: "Medium",
 		material: "Cotton",
 		design: null,
-		side: "Front",
+		sleeve: "Short Sleeve",
 		color: "White",
 		specialInstructions: "",
 		payment: "",
@@ -52,7 +52,7 @@ export default function ShirtPage() {
 	const summaryInfo = [
 		{header: "General Information", fields: ["Quantity", "Size"], required: [true, true]},
 		{header: "Material", fields: ["Material"], required: [true]},
-		{header: "Design", fields: ["Design", "Side", "Color"], required: [false, false, false]},
+		{header: "Design", fields: ["Design", "Sleeve", "Color"], required: [false, true, true]},
 		{header: "Payment", fields: ["Email", "Payment"], required: [true, true]},
 	];
 
