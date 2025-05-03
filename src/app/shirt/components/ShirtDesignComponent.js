@@ -3,7 +3,9 @@
 import {CustomText} from "@/components/CustomText";
 import {FileComponent} from "@/components/FileComponent";
 import {SelectComponent} from "@/components/SelectComponent";
-import {useState, useEffect, useMemo, useCallback, memo} from "react";
+import Image from "next/image";
+import {useState, useEffect, useMemo, useCallback, memo, useRef} from "react";
+import {LongSleeveBack, LongSleeveFront, TshirtBack, TshirtFront} from "./ShirtOutlines";
 
 // Memoize the component to prevent unnecessary re-renders
 export const ShirtDesignComponent = memo(function ShirtDesignComponent({
@@ -13,6 +15,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 }) {
 	// State for front/back view
 	const [designView, setDesignView] = useState("front"); // 'front' or 'back'
+	const [longSleeves, setLongSleeves] = useState(false);
 
 	// State for files and previews for both views
 	const [selectedFiles, setSelectedFiles] = useState({
@@ -35,6 +38,10 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 		}),
 		[]
 	);
+
+	function deleteDesign() {
+		setFormData({...formData, [designView]: null});
+	}
 
 	// Use useCallback for event handlers to prevent recreation on each render
 	const handleFileChange = useCallback(
@@ -152,6 +159,8 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 
 				{/* Pass the correct preview URL based on the view */}
 				<ShirtDesign
+					deleteDesign={deleteDesign}
+					longSleeves={longSleeves}
 					shirtColor={shirtColor}
 					previewUrl={previewUrls[designView]}
 					colorHexMap={colorHexMap}
@@ -196,6 +205,11 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 					options={["Short Sleeve", "Long Sleeve"]}
 					defaultValue={formData.sleeve}
 					onChange={(value) => {
+						if (value === "Short Sleeve") {
+							setLongSleeves(false);
+						} else {
+							setLongSleeves(true);
+						}
 						setFormData((prev) => ({
 							...prev,
 							sleeve: value,
@@ -214,46 +228,271 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 	);
 });
 
-function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView}) {
+// ... imports and ShirtDesignComponent ...
+
+function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleeves, deleteDesign}) {
+	const containerRef = useRef(null);
+	const imageRef = useRef(null);
+	const interactionRef = useRef({
+		// Store interaction details
+		mode: null, // 'drag', 'scale', 'rotate'
+		startX: 0,
+		startY: 0, // Mouse start
+		elementX: 0,
+		elementY: 0, // Element start position
+		startScale: 1,
+		startRotation: 0,
+		startDist: 0, // For scaling: initial distance from center to mouse
+		startAngle: 0, // For rotation: initial angle from center to mouse
+		centerX: 0,
+		centerY: 0, // Element center on screen
+		handle: null, // Which handle is being dragged ('tl', 'tr', 'bl', 'br', etc.)
+	});
+
+	const [position, setPosition] = useState({x: 0, y: 0});
+	const [scale, setScale] = useState(1);
+	const [rotation, setRotation] = useState(0);
+	const [isInteracting, setIsInteracting] = useState(false); // Single state for any interaction
+
+	// --- Helper: Get Center ---
+	const getCenter = useCallback(() => {
+		if (!imageRef.current) return {x: 0, y: 0};
+		const rect = imageRef.current.getBoundingClientRect();
+		return {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2};
+	}, []);
+
+	// --- Interaction Handlers ---
+	const handleMouseDown = useCallback(
+		(e, handleType = "drag") => {
+			if (!previewUrl || !imageRef.current) return;
+			e.preventDefault();
+			e.stopPropagation();
+
+			const center = getCenter();
+			const dx = e.clientX - center.x;
+			const dy = e.clientY - center.y;
+			const dist = Math.sqrt(dx * dx + dy * dy);
+			const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+			let mode = "drag"; // Default to drag
+			let cursor = "grabbing";
+
+			// Determine mode based on handleType or proximity for rotation
+			if (handleType.startsWith("handle-")) {
+				mode = "scale";
+			} else if (handleType === "rotate") {
+				// If a dedicated rotation handle is clicked
+				mode = "rotate";
+			}
+			// TODO: Add logic for detecting clicks "near" corners for rotation if no dedicated handle
+
+			interactionRef.current = {
+				mode: mode,
+				startX: e.clientX,
+				startY: e.clientY,
+				elementX: position.x,
+				elementY: position.y,
+				startScale: scale,
+				startRotation: rotation,
+				startDist: dist,
+				startAngle: angle,
+				centerX: center.x,
+				centerY: center.y,
+				handle: handleType.startsWith("handle-") ? handleType.split("-")[1] : null,
+			};
+
+			setIsInteracting(true);
+			imageRef.current.style.userSelect = "none";
+		},
+		[previewUrl, position.x, position.y, scale, rotation, getCenter]
+	);
+
+	useEffect(() => {
+		setPosition({x: 0, y: 0});
+		setScale(1);
+		setRotation(0);
+		setIsInteracting(false);
+	}, [previewUrl]);
+
+	const handleMouseMove = useCallback(
+		(e) => {
+			if (!isInteracting) return;
+			e.preventDefault();
+
+			const {
+				mode,
+				startX,
+				startY,
+				elementX,
+				elementY,
+				startScale,
+				startRotation,
+				startDist,
+				startAngle,
+				centerX,
+				centerY,
+				handle,
+			} = interactionRef.current;
+
+			const currentDx = e.clientX - centerX;
+			const currentDy = e.clientY - centerY;
+
+			if (mode === "drag") {
+				const dx = e.clientX - startX;
+				const dy = e.clientY - startY;
+				const imageRect = imageRef.current.getBoundingClientRect();
+				const containerRect = containerRef.current.getBoundingClientRect();
+				const offsetX = containerRect.width / 2 - imageRect.width / 2;
+				const offsetY = containerRect.height / 2 - imageRect.height / 2;
+				let finalX = elementX + dx;
+				let finalY = elementY + dy;
+
+				if (elementX + dx + offsetX < 0) {
+					finalX = -offsetX; // Prevent dragging out of left bound
+				}
+				if (elementX + dx + offsetX + imageRect.width > containerRect.width) {
+					finalX = containerRect.width - offsetX - imageRect.width; // Prevent dragging out of right bound
+				}
+				if (elementY + dy + offsetY < 0) {
+					finalY = -offsetY;
+				}
+				if (elementY + dy + offsetY + imageRect.height > containerRect.height) {
+					finalY = containerRect.height - offsetY - imageRect.height;
+				}
+				setPosition({x: finalX, y: finalY});
+			} else if (mode === "scale" && handle) {
+				// Scaling logic (simplified - scales proportionally from center based on distance change)
+				const currentDist = Math.sqrt(currentDx * currentDx + currentDy * currentDy);
+				if (startDist > 0) {
+					// Avoid division by zero
+					let newScale = startScale * (currentDist / startDist);
+					newScale = Math.max(0.1, Math.min(newScale, 5)); // Clamp scale
+					setScale(newScale);
+				}
+			} else if (mode === "rotate") {
+				const currentAngle = Math.atan2(currentDy, currentDx) * (180 / Math.PI);
+				const angleDiff = currentAngle - startAngle;
+				setRotation(startRotation + angleDiff);
+			}
+		},
+		[isInteracting]
+	); // Depend only on interaction state
+
+	const handleMouseUp = useCallback(() => {
+		if (isInteracting) {
+			setIsInteracting(false);
+			interactionRef.current.mode = null;
+			if (imageRef.current) {
+				imageRef.current.style.userSelect = "";
+			}
+		}
+	}, [isInteracting]);
+
+	// Effect for global listeners
+	useEffect(() => {
+		if (isInteracting) {
+			window.addEventListener("mousemove", handleMouseMove);
+			window.addEventListener("mouseup", handleMouseUp);
+		} else {
+			window.removeEventListener("mousemove", handleMouseMove);
+			window.removeEventListener("mouseup", handleMouseUp);
+		}
+		return () => {
+			window.removeEventListener("mousemove", handleMouseMove);
+			window.removeEventListener("mouseup", handleMouseUp);
+		};
+	}, [isInteracting, handleMouseMove, handleMouseUp]);
+
+	// Define handle positions (example for corners)
+	const handles = ["tl", "tr", "bl", "br"]; // Top-left, Top-right, etc.
+
 	return (
-		<div className="flex flex-col w-4/9 h-80">
+		// Remove onWheel from containerRef
+		<div ref={containerRef} className="flex flex-col w-4/9 h-80">
 			<CustomText type={"medium"} className="mb-2">
-				{/* Update preview title based on view */}
 				{designView === "front" ? "Front" : "Back"} Preview
 			</CustomText>
-			<div className="flex flex-col items-center justify-center w-full h-full shadow-lg rounded-lg p-4 bg-white">
-				<div className="relative w-full h-40 flex items-center justify-center">
-					{/* T-shirt base image with selected color */}
-					<div className="relative w-32 h-40">
-						<div
-							className={`absolute inset-0 rounded-md ${
-								shirtColor === "White" ? "border border-gray-200" : ""
-							}`}
-							style={{
-								backgroundColor: colorHexMap[shirtColor] || "#FFFFFF",
-								clipPath:
-									"polygon(25% 0%, 75% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%)",
-							}}
-						>
-							{/* This creates a simple t-shirt shape with selected color */}
-						</div>
+			<div className="flex items-center justify-center w-full h-full shadow-lg rounded-lg p-4 bg-white overflow-hidden relative select-none">
+				<div className="flex flex-col gap-1 absolute pointer-events-none bottom-3 right-3 z-1">
+					<button
+						onClick={deleteDesign}
+						className="pointer-events-auto cursor-pointer bg-blue-100 w-8 h-8 rounded-full"
+					/>
+					<button className="pointer-events-auto cursor-pointer bg-red-100 w-8 h-8 rounded-full" />
+				</div>
+				<div className="relative w-full h-full flex items-center justify-center">
+					<ShirtOutline
+						color={colorHexMap[shirtColor]}
+						longSleeve={longSleeves}
+						side={designView}
+					/>
 
-						{/* Design overlay */}
-						{previewUrl && (
-							<div className="absolute inset-0 flex items-center justify-center">
+					{/* Interaction Layer */}
+					{previewUrl && (
+						<div // This outer div now helps position the image and handles together
+							ref={imageRef} // Keep ref here for bounding box? Or move to inner? Needs testing.
+							className="absolute cursor-grab" // Base cursor
+							style={{
+								top: "50%",
+								left: "50%",
+								// Apply transform to this container div
+								transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px)) rotate(${rotation}deg) scale(${scale})`,
+								transformOrigin: "center center",
+							}}
+							onMouseDown={(e) => handleMouseDown(e, "drag")} // Default drag on image body
+						>
+							{/* The actual image */}
+							<div
+								className="w-20 h-20 bg-contain bg-center bg-no-repeat touch-none"
+								style={{backgroundImage: `url(${previewUrl})`}}
+							/>
+
+							{/* Handles (only show when interacting or hovered?) */}
+							{handles.map((handle) => (
 								<div
-									className="w-20 h-20 bg-contain bg-center bg-no-repeat"
+									key={handle}
+									// Basic positioning - needs refinement based on handle type (tl, tr, etc.)
+									className={`absolute w-3 h-3 bg-blue-500 border border-white rounded-sm ${
+										handle.includes("t") ? "-top-1" : "-bottom-1"
+									} ${handle.includes("l") ? "-left-1" : "-right-1"}`}
+									// Apply specific cursor based on handle
 									style={{
-										backgroundImage: `url(${previewUrl})`,
-										top: "25%",
-										left: "20%",
+										cursor: `${
+											handle === "tl" || handle === "br"
+												? "nwse-resize"
+												: "nesw-resize"
+										}`,
 									}}
-								></div>
-							</div>
-						)}
-					</div>
+									onMouseDown={(e) => handleMouseDown(e, `handle-${handle}`)}
+								/>
+							))}
+							<div
+								className="absolute left-1/2 -translate-x-1/2 -top-7 w-5 h-5 rounded-full bg-blue-500 border border-white flex items-center justify-center cursor-grab shadow"
+								// Pass specific rotate button type
+								onMouseDown={(e) => handleMouseDown(e, "rotate")}
+							></div>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
 	);
+}
+
+function ShirtOutline({side, longSleeve, color}) {
+	if (longSleeve) {
+		if (side === "front") {
+			return <LongSleeveFront color={color} />;
+		}
+		if (side === "back") {
+			return <LongSleeveBack color={color} />;
+		}
+	} else {
+		if (side === "front") {
+			return <TshirtFront color={color} />;
+		}
+		if (side === "back") {
+			return <TshirtBack color={color} />;
+		}
+	}
 }
