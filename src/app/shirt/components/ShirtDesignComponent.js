@@ -6,6 +6,7 @@ import {SelectComponent} from "@/components/SelectComponent";
 import Image from "next/image";
 import {useState, useEffect, useMemo, useCallback, memo, useRef} from "react";
 import {LongSleeveBack, LongSleeveFront, TshirtBack, TshirtFront} from "./ShirtOutlines";
+import {toPng} from "html-to-image";
 
 // Memoize the component to prevent unnecessary re-renders
 export const ShirtDesignComponent = memo(function ShirtDesignComponent({
@@ -164,6 +165,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 				{/* Pass the correct preview URL based on the view */}
 				<ShirtDesign
 					metadata={metadata}
+					setFormData={setFormData}
 					deleteDesign={deleteDesign}
 					longSleeves={longSleeves}
 					shirtColor={shirtColor}
@@ -236,6 +238,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 // ... imports and ShirtDesignComponent ...
 
 function ShirtDesign({
+	setFormData,
 	metadata,
 	shirtColor,
 	previewUrl,
@@ -406,42 +409,10 @@ function ShirtDesign({
 		[isInteracting, position]
 	); // Depend only on interaction state
 
-	useEffect(() => {
-		setIsSelected(true);
-		setPosition(metadata.current[designView + "Position"] || {x: 0, y: 0});
-		setScale(metadata.current[designView + "Scale"] || 1);
-		setRotation(metadata.current[designView + "Rotation"] || 0);
-		setIsInteracting(false);
-		// Reset bounding box on URL change too
-		if (imageRef.current && containerRef.current) {
-			// Temporarily set scale/rotation to defaults to measure base size
-			const originalTransform = imageRef.current.style.transform;
-			imageRef.current.style.transform = "translate(-50%, -50%) rotate(0deg) scale(1)";
-			const imageRect = imageRef.current.getBoundingClientRect();
-			const containerRect = containerRef.current.getBoundingClientRect();
-			imageRef.current.style.transform = originalTransform; // Restore original
-
-			setBoundingBox({
-				top:
-					imageRect.top -
-					containerRect.top -
-					containerRect.height / 2 +
-					imageRect.height / 2,
-				left:
-					imageRect.left -
-					containerRect.left -
-					containerRect.width / 2 +
-					imageRect.width / 2,
-				width: imageRect.width,
-				height: imageRect.height,
-			});
-		} else {
-			setBoundingBox({top: 0, left: 0, width: 0, height: 0});
-		}
-	}, [previewUrl]);
-
 	const handleMouseUp = useCallback(() => {
 		if (isInteracting) {
+			setFormDataPreview(containerRef.current);
+
 			setIsInteracting(false);
 			interactionRef.current.mode = null;
 			if (imageRef.current) {
@@ -476,6 +447,40 @@ function ShirtDesign({
 		}
 	}, []);
 
+	useEffect(() => {
+		setIsSelected(true);
+		setPosition(metadata.current[designView + "Position"] || {x: 0, y: 0});
+		setScale(metadata.current[designView + "Scale"] || 1);
+		setRotation(metadata.current[designView + "Rotation"] || 0);
+		setIsInteracting(false);
+		// Reset bounding box on URL change too
+		if (imageRef.current && containerRef.current) {
+			// Temporarily set scale/rotation to defaults to measure base size
+			const originalTransform = imageRef.current.style.transform;
+			imageRef.current.style.transform = "translate(-50%, -50%) rotate(0deg) scale(1)";
+			const imageRect = imageRef.current.getBoundingClientRect();
+			const containerRect = containerRef.current.getBoundingClientRect();
+			imageRef.current.style.transform = originalTransform; // Restore original
+
+			setBoundingBox({
+				top:
+					imageRect.top -
+					containerRect.top -
+					containerRect.height / 2 +
+					imageRect.height / 2,
+				left:
+					imageRect.left -
+					containerRect.left -
+					containerRect.width / 2 +
+					imageRect.width / 2,
+				width: imageRect.width,
+				height: imageRect.height,
+			});
+		} else {
+			setBoundingBox({top: 0, left: 0, width: 0, height: 0});
+		}
+	}, [previewUrl]);
+
 	// Effect for global listeners
 	useEffect(() => {
 		if (isInteracting) {
@@ -502,23 +507,41 @@ function ShirtDesign({
 		};
 	}, [isSelected, handleClickOutside]);
 
+	async function setFormDataPreview(ref) {
+		if (!ref) return;
+
+		const filter = (node) => {
+			// Check if the node is an element and has the class
+			if (node.title === "boundingBox") {
+				return false; // Ignore bounding box
+			}
+			return true;
+		};
+
+		const base64String = await toPng(ref, {filter: filter});
+		setFormData((prev) => ({
+			...prev,
+			[designView + "Preview"]: {base64: base64String},
+		}));
+	}
+
 	// Define handle positions (example for corners)
 	const handles = ["tl", "tr", "bl", "br"]; // Top-left, Top-right, etc.
 
 	return (
 		// Remove onWheel from containerRef
-		<div className="flex flex-col w-4/9 h-80">
+		<div className="flex relative flex-col w-4/9 h-80">
 			<CustomText type={"medium"} className="mb-2">
 				{designView === "front" ? "Front" : "Back"} Preview
 			</CustomText>
+			<button
+				onClick={deleteDesign}
+				className=" absolute bottom-3 right-3 z-1 cursor-pointer bg-blue-100 w-8 h-8 rounded-full"
+			/>
 			<div
 				ref={containerRef}
 				className="flex items-center justify-center w-full h-full shadow-lg rounded-lg p-0 bg-white overflow-hidden relative select-none"
 			>
-				<button
-					onClick={deleteDesign}
-					className=" absolute bottom-3 right-3 z-1 cursor-pointer bg-blue-100 w-8 h-8 rounded-full"
-				/>
 				<div className="relative w-full h-full flex items-center justify-center">
 					<ShirtOutline
 						color={colorHexMap[shirtColor]}
@@ -556,6 +579,7 @@ function ShirtDesign({
 					{/* Unrotated Handle/Bounding Box Layer */}
 					{isSelected && previewUrl && boundingBox.width > 0 && (
 						<div
+							title="boundingBox"
 							ref={selectionRef}
 							className="absolute border border-blue-500 pointer-events-none" // Border for visualization, disable pointer events
 							style={{
@@ -596,7 +620,6 @@ function ShirtDesign({
 
 							{/* Rotation Handle (positioned relative to this bounding box) */}
 							<div
-								title="Drag to Rotate"
 								className="absolute w-5 h-5 rounded-full bg-blue-500 border border-white flex items-center justify-center shadow pointer-events-auto" // Enable pointer events
 								style={{
 									top: "-0.625rem", // Offset half handle size

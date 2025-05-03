@@ -1,6 +1,8 @@
 "use server";
 import {google} from "googleapis";
 
+const imageKeys = ["design", "front", "back", "frontPreview", "backPreview"];
+
 export async function getSheetData() {
 	const glAuth = await google.auth.getClient({
 		projectId: process.env.PROJECT_ID,
@@ -64,11 +66,12 @@ export async function setSheetData(formData, itemType) {
 					[
 						"",
 						...Object.keys(formData).map((key) => {
-							if (
-								(key === "design" || key === "front" || key === "back") &&
-								formData[key] !== null
-							) {
-								return "Design attached in note"; // Placeholder text in the cell
+							if (imageKeys.includes(key)) {
+								if (formData[key] !== null) {
+									return "Design attached in note";
+								} else {
+									return "None";
+								}
 							} else {
 								return formData[key];
 							}
@@ -81,18 +84,13 @@ export async function setSheetData(formData, itemType) {
 		// If there's design data, add it as a note
 		let designDataArr = [];
 		let designDataNames = [];
-		if (formData.design && formData.design !== null) {
-			designDataArr.push(formData.design);
-			designDataNames.push("design");
-		}
-		if (formData.front && formData.front !== null) {
-			designDataArr.push(formData.front);
-			designDataNames.push("front");
-		}
-		if (formData.back && formData.back !== null) {
-			designDataArr.push(formData.back);
-			designDataNames.push("back");
-		}
+		imageKeys.forEach((key) => {
+			if (formData[key] && formData[key] !== null) {
+				console.log(key);
+				designDataArr.push(formData[key]);
+				designDataNames.push(key);
+			}
+		});
 		for (let i = 0; i < designDataArr.length; i++) {
 			const designData = designDataArr[i];
 			const designDataName = designDataNames[i];

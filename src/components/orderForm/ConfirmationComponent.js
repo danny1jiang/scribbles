@@ -36,8 +36,6 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 					result[fieldName] = false; // Not required, so not missing
 				} else if (fieldName === "payment") {
 					result[fieldName] = !formData?.[fieldName] || formData[fieldName].trim() === "";
-				} else if (fieldName === "design") {
-					result[fieldName] = !formData?.[fieldName];
 				} else {
 					result[fieldName] = !formData?.[fieldName];
 				}
