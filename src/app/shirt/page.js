@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {FormWrapperComponent} from "../../components/orderForm/shared/FormWrapperComponent";
 import {ShirtBasicInfoComponent} from "./components/ShirtBasicInfo";
 import {ShirtMaterialsComponent} from "./components/ShirtMaterialsComponent";
@@ -20,6 +20,15 @@ export default function ShirtPage() {
 		email: "",
 	});
 
+	const metadata = useRef({
+		frontScale: 1,
+		frontPosition: {x: 0, y: 0},
+		frontRotation: 0,
+		backScale: 1,
+		backPosition: {x: 0, y: 0},
+		backRotation: 0,
+	});
+
 	const componentArray = [
 		<ShirtBasicInfoComponent
 			key={0}
@@ -35,6 +44,7 @@ export default function ShirtPage() {
 		/>,
 		<ShirtDesignComponent
 			key={2}
+			metadata={metadata}
 			setFormData={setFormData}
 			formData={formData}
 			styles={styles}

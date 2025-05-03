@@ -9,6 +9,7 @@ import {LongSleeveBack, LongSleeveFront, TshirtBack, TshirtFront} from "./ShirtO
 
 // Memoize the component to prevent unnecessary re-renders
 export const ShirtDesignComponent = memo(function ShirtDesignComponent({
+	metadata,
 	setFormData,
 	formData,
 	styles,
@@ -41,6 +42,9 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 
 	function deleteDesign() {
 		setFormData({...formData, [designView]: null});
+		metadata.current[designView + "Position"] = {x: 0, y: 0};
+		metadata.current[designView + "Scale"] = 1;
+		metadata.current[designView + "Rotation"] = 0;
 	}
 
 	// Use useCallback for event handlers to prevent recreation on each render
@@ -159,6 +163,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 
 				{/* Pass the correct preview URL based on the view */}
 				<ShirtDesign
+					metadata={metadata}
 					deleteDesign={deleteDesign}
 					longSleeves={longSleeves}
 					shirtColor={shirtColor}
@@ -230,10 +235,28 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 
 // ... imports and ShirtDesignComponent ...
 
-function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleeves, deleteDesign}) {
+function ShirtDesign({
+	metadata,
+	shirtColor,
+	previewUrl,
+	colorHexMap,
+	designView,
+	longSleeves,
+	deleteDesign,
+}) {
 	const containerRef = useRef(null);
 	const selectionRef = useRef(null);
 	const imageRef = useRef(null);
+
+	const [position, setPosition] = useState(
+		metadata.current[designView + "Position"] || {x: 0, y: 0}
+	);
+	const [scale, setScale] = useState(metadata.current[designView + "Scale"] || 1);
+	const [rotation, setRotation] = useState(metadata.current[designView + "Rotation"] || 0);
+	const [isInteracting, setIsInteracting] = useState(false); // Single state for any interaction
+	const [boundingBox, setBoundingBox] = useState({top: 0, left: 0, width: 0, height: 0});
+	const [isSelected, setIsSelected] = useState(true);
+
 	const interactionRef = useRef({
 		// Store interaction details
 		mode: null, // 'drag', 'scale', 'rotate'
@@ -249,13 +272,6 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 		centerY: 0, // Element center on screen
 		handle: null, // Which handle is being dragged ('tl', 'tr', 'bl', 'br', etc.)
 	});
-
-	const [position, setPosition] = useState({x: 0, y: 0});
-	const [scale, setScale] = useState(1);
-	const [rotation, setRotation] = useState(0);
-	const [isInteracting, setIsInteracting] = useState(false); // Single state for any interaction
-	const [boundingBox, setBoundingBox] = useState({top: 0, left: 0, width: 0, height: 0});
-	const [isSelected, setIsSelected] = useState(true);
 
 	// --- Helper: Get Center ---
 	const getCenter = useCallback(() => {
@@ -287,7 +303,6 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 				// If a dedicated rotation handle is clicked
 				mode = "rotate";
 			}
-			// TODO: Add logic for detecting clicks "near" corners for rotation if no dedicated handle
 
 			interactionRef.current = {
 				mode: mode,
@@ -333,11 +348,12 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 			const currentDx = e.clientX - centerX;
 			const currentDy = e.clientY - centerY;
 
+			const imageRect = imageRef.current.getBoundingClientRect();
+			const containerRect = containerRef.current.getBoundingClientRect();
+
 			if (mode === "drag") {
 				const dx = e.clientX - startX;
 				const dy = e.clientY - startY;
-				const imageRect = imageRef.current.getBoundingClientRect();
-				const containerRect = containerRef.current.getBoundingClientRect();
 				const offsetX = containerRect.width / 2 - imageRect.width / 2;
 				const offsetY = containerRect.height / 2 - imageRect.height / 2;
 				let finalX = elementX + dx;
@@ -355,7 +371,10 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 				if (elementY + dy + offsetY + imageRect.height > containerRect.height) {
 					finalY = containerRect.height - offsetY - imageRect.height;
 				}
-				setPosition({x: finalX, y: finalY});
+				if (finalX !== position.x || finalY !== position.y) {
+					setPosition({x: finalX, y: finalY});
+				}
+				metadata.current[designView + "Position"] = {x: finalX, y: finalY}; // Update metadata
 			} else if (mode === "scale" && handle) {
 				// Scaling logic (simplified - scales proportionally from center based on distance change)
 				const currentDist = Math.sqrt(currentDx * currentDx + currentDy * currentDy);
@@ -364,21 +383,34 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 					let newScale = startScale * (currentDist / startDist);
 					newScale = Math.max(0.1, Math.min(newScale, 5)); // Clamp scale
 					setScale(newScale);
+					metadata.current[designView + "Scale"] = newScale; // Update metadata
 				}
 			} else if (mode === "rotate") {
 				const currentAngle = Math.atan2(currentDy, currentDx) * (180 / Math.PI);
 				const angleDiff = currentAngle - startAngle;
 				setRotation(startRotation + angleDiff);
+				metadata.current[designView + "Rotation"] = startRotation + angleDiff; // Update metadata
 			}
+			setBoundingBox({
+				top:
+					imageRect.y - containerRect.y - containerRect.height / 2 + imageRect.height / 2,
+				left:
+					imageRect.left -
+					containerRect.left -
+					containerRect.width / 2 +
+					imageRect.width / 2,
+				width: imageRect.width,
+				height: imageRect.height,
+			});
 		},
-		[isInteracting]
+		[isInteracting, position]
 	); // Depend only on interaction state
 
 	useEffect(() => {
 		setIsSelected(true);
-		setPosition({x: 0, y: 0});
-		setScale(1);
-		setRotation(0);
+		setPosition(metadata.current[designView + "Position"] || {x: 0, y: 0});
+		setScale(metadata.current[designView + "Scale"] || 1);
+		setRotation(metadata.current[designView + "Rotation"] || 0);
 		setIsInteracting(false);
 		// Reset bounding box on URL change too
 		if (imageRef.current && containerRef.current) {
@@ -407,25 +439,6 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 			setBoundingBox({top: 0, left: 0, width: 0, height: 0});
 		}
 	}, [previewUrl]);
-
-	useEffect(() => {
-		if (imageRef.current && containerRef.current) {
-			const imageRect = imageRef.current.getBoundingClientRect();
-			const containerRect = containerRef.current.getBoundingClientRect();
-
-			setBoundingBox({
-				top:
-					imageRect.y - containerRect.y - containerRect.height / 2 + imageRect.height / 2,
-				left:
-					imageRect.left -
-					containerRect.left -
-					containerRect.width / 2 +
-					imageRect.width / 2,
-				width: imageRect.width,
-				height: imageRect.height,
-			});
-		}
-	}, [position, scale, rotation, previewUrl]); // Update when transform or URL changes
 
 	const handleMouseUp = useCallback(() => {
 		if (isInteracting) {
