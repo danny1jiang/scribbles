@@ -232,6 +232,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 
 function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleeves, deleteDesign}) {
 	const containerRef = useRef(null);
+	const selectionRef = useRef(null);
 	const imageRef = useRef(null);
 	const interactionRef = useRef({
 		// Store interaction details
@@ -253,6 +254,8 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 	const [scale, setScale] = useState(1);
 	const [rotation, setRotation] = useState(0);
 	const [isInteracting, setIsInteracting] = useState(false); // Single state for any interaction
+	const [boundingBox, setBoundingBox] = useState({top: 0, left: 0, width: 0, height: 0});
+	const [isSelected, setIsSelected] = useState(true);
 
 	// --- Helper: Get Center ---
 	const getCenter = useCallback(() => {
@@ -306,13 +309,6 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 		},
 		[previewUrl, position.x, position.y, scale, rotation, getCenter]
 	);
-
-	useEffect(() => {
-		setPosition({x: 0, y: 0});
-		setScale(1);
-		setRotation(0);
-		setIsInteracting(false);
-	}, [previewUrl]);
 
 	const handleMouseMove = useCallback(
 		(e) => {
@@ -378,6 +374,59 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 		[isInteracting]
 	); // Depend only on interaction state
 
+	useEffect(() => {
+		setIsSelected(true);
+		setPosition({x: 0, y: 0});
+		setScale(1);
+		setRotation(0);
+		setIsInteracting(false);
+		// Reset bounding box on URL change too
+		if (imageRef.current && containerRef.current) {
+			// Temporarily set scale/rotation to defaults to measure base size
+			const originalTransform = imageRef.current.style.transform;
+			imageRef.current.style.transform = "translate(-50%, -50%) rotate(0deg) scale(1)";
+			const imageRect = imageRef.current.getBoundingClientRect();
+			const containerRect = containerRef.current.getBoundingClientRect();
+			imageRef.current.style.transform = originalTransform; // Restore original
+
+			setBoundingBox({
+				top:
+					imageRect.top -
+					containerRect.top -
+					containerRect.height / 2 +
+					imageRect.height / 2,
+				left:
+					imageRect.left -
+					containerRect.left -
+					containerRect.width / 2 +
+					imageRect.width / 2,
+				width: imageRect.width,
+				height: imageRect.height,
+			});
+		} else {
+			setBoundingBox({top: 0, left: 0, width: 0, height: 0});
+		}
+	}, [previewUrl]);
+
+	useEffect(() => {
+		if (imageRef.current && containerRef.current) {
+			const imageRect = imageRef.current.getBoundingClientRect();
+			const containerRect = containerRef.current.getBoundingClientRect();
+
+			setBoundingBox({
+				top:
+					imageRect.y - containerRect.y - containerRect.height / 2 + imageRect.height / 2,
+				left:
+					imageRect.left -
+					containerRect.left -
+					containerRect.width / 2 +
+					imageRect.width / 2,
+				width: imageRect.width,
+				height: imageRect.height,
+			});
+		}
+	}, [position, scale, rotation, previewUrl]); // Update when transform or URL changes
+
 	const handleMouseUp = useCallback(() => {
 		if (isInteracting) {
 			setIsInteracting(false);
@@ -387,6 +436,32 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 			}
 		}
 	}, [isInteracting]);
+
+	const handleImageClick = useCallback(
+		(e) => {
+			e.stopPropagation(); // Prevent click outside listener when clicking image itself
+			if (!isInteracting) {
+				// Only toggle selection if not currently dragging/scaling/rotating
+				setIsSelected(true); // Select when clicked
+			}
+		},
+		[isInteracting]
+	);
+
+	const handleClickOutside = useCallback((event) => {
+		// Deselect if clicked outside the image wrapper and its handles
+		if (
+			selectionRef.current &&
+			!selectionRef.current.contains(event.target) &&
+			imageRef.current &&
+			!imageRef.current.contains(event.target)
+		) {
+			// Check if the click is on a handle (which are technically outside imageRef but part of the controls)
+			// A simpler approach for now: just check if outside imageRef.
+			// If clicking handles should NOT deselect, more complex logic is needed here or stopPropagation in handleMouseDown.
+			setIsSelected(false);
+		}
+	}, []);
 
 	// Effect for global listeners
 	useEffect(() => {
@@ -403,23 +478,34 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 		};
 	}, [isInteracting, handleMouseMove, handleMouseUp]);
 
+	useEffect(() => {
+		if (isSelected) {
+			document.addEventListener("mousedown", handleClickOutside);
+		} else {
+			document.removeEventListener("mousedown", handleClickOutside);
+		}
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, [isSelected, handleClickOutside]);
+
 	// Define handle positions (example for corners)
 	const handles = ["tl", "tr", "bl", "br"]; // Top-left, Top-right, etc.
 
 	return (
 		// Remove onWheel from containerRef
-		<div ref={containerRef} className="flex flex-col w-4/9 h-80">
+		<div className="flex flex-col w-4/9 h-80">
 			<CustomText type={"medium"} className="mb-2">
 				{designView === "front" ? "Front" : "Back"} Preview
 			</CustomText>
-			<div className="flex items-center justify-center w-full h-full shadow-lg rounded-lg p-4 bg-white overflow-hidden relative select-none">
-				<div className="flex flex-col gap-1 absolute pointer-events-none bottom-3 right-3 z-1">
-					<button
-						onClick={deleteDesign}
-						className="pointer-events-auto cursor-pointer bg-blue-100 w-8 h-8 rounded-full"
-					/>
-					<button className="pointer-events-auto cursor-pointer bg-red-100 w-8 h-8 rounded-full" />
-				</div>
+			<div
+				ref={containerRef}
+				className="flex items-center justify-center w-full h-full shadow-lg rounded-lg p-0 bg-white overflow-hidden relative select-none"
+			>
+				<button
+					onClick={deleteDesign}
+					className=" absolute bottom-3 right-3 z-1 cursor-pointer bg-blue-100 w-8 h-8 rounded-full"
+				/>
 				<div className="relative w-full h-full flex items-center justify-center">
 					<ShirtOutline
 						color={colorHexMap[shirtColor]}
@@ -439,37 +525,73 @@ function ShirtDesign({shirtColor, previewUrl, colorHexMap, designView, longSleev
 								transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px)) rotate(${rotation}deg) scale(${scale})`,
 								transformOrigin: "center center",
 							}}
-							onMouseDown={(e) => handleMouseDown(e, "drag")} // Default drag on image body
+							onMouseDown={(e) => {
+								if (!isSelected) {
+									handleImageClick(e);
+								}
+								handleMouseDown(e, "drag");
+							}} // Default drag on image body
 						>
 							{/* The actual image */}
 							<div
 								className="w-20 h-20 bg-contain bg-center bg-no-repeat touch-none"
 								style={{backgroundImage: `url(${previewUrl})`}}
 							/>
+						</div>
+					)}
 
-							{/* Handles (only show when interacting or hovered?) */}
-							{handles.map((handle) => (
-								<div
-									key={handle}
-									// Basic positioning - needs refinement based on handle type (tl, tr, etc.)
-									className={`absolute w-3 h-3 bg-blue-500 border border-white rounded-sm ${
-										handle.includes("t") ? "-top-1" : "-bottom-1"
-									} ${handle.includes("l") ? "-left-1" : "-right-1"}`}
-									// Apply specific cursor based on handle
-									style={{
-										cursor: `${
-											handle === "tl" || handle === "br"
-												? "nwse-resize"
-												: "nesw-resize"
-										}`,
-									}}
-									onMouseDown={(e) => handleMouseDown(e, `handle-${handle}`)}
-								/>
-							))}
+					{/* Unrotated Handle/Bounding Box Layer */}
+					{isSelected && previewUrl && boundingBox.width > 0 && (
+						<div
+							ref={selectionRef}
+							className="absolute border border-blue-500 pointer-events-none" // Border for visualization, disable pointer events
+							style={{
+								top: "50%",
+								left: "50%",
+								//left: `calc(-50% + ${boundingBox.left}px)`,
+								//top: `calc(-50% + ${boundingBox.top}px)`,
+								width: `${boundingBox.width}px`,
+								height: `${boundingBox.height}px`,
+								//transform: `translate(calc(-50% + ${boundingBox.left}px), calc(-50% + ${boundingBox.top}px)))`,
+								//transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px)) rotate(${rotation}deg) scale(${scale})`,
+								transform: `translate(calc(-50% + ${boundingBox.left}px), calc(-50% + ${boundingBox.top}px))`,
+							}}
+						>
+							{/* Scale Handles (positioned relative to this bounding box) */}
+							{handles.map((handle) => {
+								const isTop = handle.includes("t");
+								const isLeft = handle.includes("l");
+								return (
+									<div
+										key={handle}
+										className="absolute w-3 h-3 bg-blue-500 border border-white rounded-sm pointer-events-auto" // Enable pointer events
+										style={{
+											top: isTop ? "-0.375rem" : "auto", // Offset half the handle size
+											bottom: !isTop ? "-0.375rem" : "auto",
+											left: isLeft ? "-0.375rem" : "auto",
+											right: !isLeft ? "-0.375rem" : "auto",
+											cursor: `${
+												handle === "tl" || handle === "br"
+													? "nwse-resize"
+													: "nesw-resize"
+											}`,
+										}}
+										onMouseDown={(e) => handleMouseDown(e, `handle-${handle}`)}
+									/>
+								);
+							})}
+
+							{/* Rotation Handle (positioned relative to this bounding box) */}
 							<div
-								className="absolute left-1/2 -translate-x-1/2 -top-7 w-5 h-5 rounded-full bg-blue-500 border border-white flex items-center justify-center cursor-grab shadow"
-								// Pass specific rotate button type
-								onMouseDown={(e) => handleMouseDown(e, "rotate")}
+								title="Drag to Rotate"
+								className="absolute w-5 h-5 rounded-full bg-blue-500 border border-white flex items-center justify-center shadow pointer-events-auto" // Enable pointer events
+								style={{
+									top: "-0.625rem", // Offset half handle size
+									left: "50%",
+									transform: "translateX(-50%) translateY(-100%)", // Position above the top-center edge
+									cursor: "grab",
+								}}
+								onMouseDown={(e) => handleMouseDown(e, "rotate")} // Ensure correct type
 							></div>
 						</div>
 					)}
