@@ -7,6 +7,7 @@ import Image from "next/image";
 import {useState, useEffect, useMemo, useCallback, memo, useRef} from "react";
 import {LongSleeveBack, LongSleeveFront, TshirtBack, TshirtFront} from "./ShirtOutlines";
 import {toPng} from "html-to-image";
+import {X} from "lucide-react";
 
 // Memoize the component to prevent unnecessary re-renders
 export const ShirtDesignComponent = memo(function ShirtDesignComponent({
@@ -46,6 +47,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 		metadata.current[designView + "Position"] = {x: 0, y: 0};
 		metadata.current[designView + "Scale"] = 1;
 		metadata.current[designView + "Rotation"] = 0;
+		metadata.current[designView + "BoundingBox"] = null;
 	}
 
 	// Use useCallback for event handlers to prevent recreation on each render
@@ -135,7 +137,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 					key={color}
 					onClick={() => handleColorChange(color)}
 					className={`w-8 h-8 rounded-full cursor-pointer border border-gray-300 ${
-						shirtColor === color ? "ring-2 ring-blue-500" : ""
+						shirtColor === color ? "ring-2 ring-(--color-secondary)" : ""
 					}`}
 					style={{backgroundColor: colorHexMap[color]}}
 					title={color}
@@ -257,7 +259,10 @@ function ShirtDesign({
 	const [scale, setScale] = useState(metadata.current[designView + "Scale"] || 1);
 	const [rotation, setRotation] = useState(metadata.current[designView + "Rotation"] || 0);
 	const [isInteracting, setIsInteracting] = useState(false); // Single state for any interaction
-	const [boundingBox, setBoundingBox] = useState({top: 0, left: 0, width: 0, height: 0});
+	const [boundingBox, setBoundingBox] = useState(
+		metadata.current[designView + "BoundingBox"] || {top: 0, left: 0, width: 0, height: 0}
+	);
+
 	const [isSelected, setIsSelected] = useState(true);
 
 	const interactionRef = useRef({
@@ -394,7 +399,7 @@ function ShirtDesign({
 				setRotation(startRotation + angleDiff);
 				metadata.current[designView + "Rotation"] = startRotation + angleDiff; // Update metadata
 			}
-			setBoundingBox({
+			const newBoundingBox = {
 				top:
 					imageRect.y - containerRect.y - containerRect.height / 2 + imageRect.height / 2,
 				left:
@@ -404,7 +409,9 @@ function ShirtDesign({
 					imageRect.width / 2,
 				width: imageRect.width,
 				height: imageRect.height,
-			});
+			};
+			setBoundingBox(newBoundingBox);
+			metadata.current[designView + "BoundingBox"] = newBoundingBox;
 		},
 		[isInteracting, position]
 	); // Depend only on interaction state
@@ -455,29 +462,31 @@ function ShirtDesign({
 		setIsInteracting(false);
 		// Reset bounding box on URL change too
 		if (imageRef.current && containerRef.current) {
-			// Temporarily set scale/rotation to defaults to measure base size
-			const originalTransform = imageRef.current.style.transform;
-			imageRef.current.style.transform = "translate(-50%, -50%) rotate(0deg) scale(1)";
-			const imageRect = imageRef.current.getBoundingClientRect();
-			const containerRect = containerRef.current.getBoundingClientRect();
-			imageRef.current.style.transform = originalTransform; // Restore original
+			if (!metadata.current[designView + "BoundingBox"]) {
+				// Temporarily set scale/rotation to defaults to measure base size
+				const originalTransform = imageRef.current.style.transform;
+				imageRef.current.style.transform = "translate(-50%, -50%) rotate(0deg) scale(1)";
+				const imageRect = imageRef.current.getBoundingClientRect();
+				const containerRect = containerRef.current.getBoundingClientRect();
+				imageRef.current.style.transform = originalTransform; // Restore original
 
-			setBoundingBox({
-				top:
-					imageRect.top -
-					containerRect.top -
-					containerRect.height / 2 +
-					imageRect.height / 2,
-				left:
-					imageRect.left -
-					containerRect.left -
-					containerRect.width / 2 +
-					imageRect.width / 2,
-				width: imageRect.width,
-				height: imageRect.height,
-			});
-		} else {
-			setBoundingBox({top: 0, left: 0, width: 0, height: 0});
+				setBoundingBox({
+					top:
+						imageRect.top -
+						containerRect.top -
+						containerRect.height / 2 +
+						imageRect.height / 2,
+					left:
+						imageRect.left -
+						containerRect.left -
+						containerRect.width / 2 +
+						imageRect.width / 2,
+					width: imageRect.width,
+					height: imageRect.height,
+				});
+			} else {
+				setBoundingBox(metadata.current[designView + "BoundingBox"]);
+			}
 		}
 	}, [previewUrl]);
 
@@ -536,8 +545,10 @@ function ShirtDesign({
 			</CustomText>
 			<button
 				onClick={deleteDesign}
-				className=" absolute bottom-3 right-3 z-1 cursor-pointer bg-blue-100 w-8 h-8 rounded-full"
-			/>
+				className="hover:bg-[#f8f8f8] active:bg-[#f1f1f1] flex justify-center items-center absolute bottom-3 right-3 z-1 cursor-pointer bg-white shadow-md border border-(--color-light-gray) w-8 h-8 rounded-full"
+			>
+				<X strokeWidth={1.5} color="#999999" />
+			</button>
 			<div
 				ref={containerRef}
 				className="flex items-center justify-center w-full h-full shadow-lg rounded-lg p-0 bg-white overflow-hidden relative select-none"
@@ -568,10 +579,11 @@ function ShirtDesign({
 								handleMouseDown(e, "drag");
 							}} // Default drag on image body
 						>
-							{/* The actual image */}
-							<div
-								className="w-20 h-20 bg-contain bg-center bg-no-repeat touch-none"
-								style={{backgroundImage: `url(${previewUrl})`}}
+							{/* Design image */}
+							<img
+								src={previewUrl}
+								alt="Design Preview"
+								style={{width: "auto", height: "auto"}}
 							/>
 						</div>
 					)}
@@ -581,7 +593,7 @@ function ShirtDesign({
 						<div
 							title="boundingBox"
 							ref={selectionRef}
-							className="absolute border border-blue-500 pointer-events-none" // Border for visualization, disable pointer events
+							className="absolute border border-(--color-secondary) pointer-events-none" // Border for visualization, disable pointer events
 							style={{
 								top: "50%",
 								left: "50%",
@@ -601,7 +613,7 @@ function ShirtDesign({
 								return (
 									<div
 										key={handle}
-										className="absolute w-3 h-3 bg-blue-500 border border-white rounded-sm pointer-events-auto" // Enable pointer events
+										className="absolute w-3 h-3 bg-(--color-secondary) border border-white rounded-sm pointer-events-auto" // Enable pointer events
 										style={{
 											top: isTop ? "-0.375rem" : "auto", // Offset half the handle size
 											bottom: !isTop ? "-0.375rem" : "auto",
@@ -620,7 +632,7 @@ function ShirtDesign({
 
 							{/* Rotation Handle (positioned relative to this bounding box) */}
 							<div
-								className="absolute w-5 h-5 rounded-full bg-blue-500 border border-white flex items-center justify-center shadow pointer-events-auto" // Enable pointer events
+								className="absolute w-5 h-5 rounded-full bg-(--color-secondary) border border-white flex items-center justify-center shadow pointer-events-auto" // Enable pointer events
 								style={{
 									top: "-0.625rem", // Offset half handle size
 									left: "50%",

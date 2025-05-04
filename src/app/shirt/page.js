@@ -26,9 +26,11 @@ export default function ShirtPage() {
 		frontScale: 1,
 		frontPosition: {x: 0, y: 0},
 		frontRotation: 0,
+		frontBoundingBox: null,
 		backScale: 1,
 		backPosition: {x: 0, y: 0},
 		backRotation: 0,
+		backBoundingBox: null,
 	});
 
 	const componentArray = [
