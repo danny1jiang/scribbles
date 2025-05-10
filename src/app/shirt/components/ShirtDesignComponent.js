@@ -148,8 +148,8 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
-			<div className="flex flex-row w-full justify-between">
-				<div className="flex flex-col w-4/9">
+			<div className="flex flex-col md:flex-row w-full justify-between">
+				<div className="flex flex-col w-full md:w-4/9 mb-4 md:mb-0">
 					<CustomText type={"medium"} className="mb-2">
 						{/* Dynamically update title based on view */}
 						Upload Your {designView === "front" ? "Front" : "Back"} Design
@@ -539,7 +539,7 @@ function ShirtDesign({
 
 	return (
 		// Remove onWheel from containerRef
-		<div className="flex relative flex-col w-4/9 h-80">
+		<div className="flex relative flex-col w-full md:w-4/9 h-80">
 			<CustomText type={"medium"} className="mb-2">
 				{designView === "front" ? "Front" : "Back"} Preview
 			</CustomText>
@@ -551,9 +551,9 @@ function ShirtDesign({
 			</button>
 			<div
 				ref={containerRef}
-				className="flex items-center justify-center w-full h-full shadow-lg rounded-lg p-0 bg-white overflow-hidden relative select-none"
+				className="flex items-center justify-center h-full shadow-lg rounded-lg p-0 bg-white overflow-hidden relative select-none"
 			>
-				<div className="relative w-full h-full flex items-center justify-center">
+				<div className="relative w-50 h-full flex items-center justify-center">
 					<ShirtOutline
 						color={colorHexMap[shirtColor]}
 						longSleeve={longSleeves}

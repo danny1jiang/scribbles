@@ -51,11 +51,11 @@ export function StickerDesignComponent({setFormData, formData, styles}) {
 
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
-			<div className="flex flex-row w-full justify-between">
+			<div className="flex flex-col md:flex-row w-full justify-between">
 				{" "}
 				{/* Remove items-stretch, let height be determined by children */}
 				{/* Upload Section - This will adapt to the height of its sibling */}
-				<div className="flex flex-col w-4/9">
+				<div className="flex flex-col w-full md:w-4/9 mb-4 md:mb-0">
 					<CustomText type={"medium"} className="mb-2">
 						Upload Your Design
 					</CustomText>
@@ -68,7 +68,7 @@ export function StickerDesignComponent({setFormData, formData, styles}) {
 					</div>
 				</div>
 				{/* Preview Section - This has fixed height and will determine parent height */}
-				<div className="flex flex-col w-4/9 h-80">
+				<div className="flex flex-col w-full md:w-4/9 h-80">
 					<CustomText type={"medium"} className="mb-2">
 						Preview
 					</CustomText>
