@@ -462,6 +462,9 @@ function ShirtDesign({
 		setIsInteracting(false);
 		// Reset bounding box on URL change too
 		if (imageRef.current && containerRef.current) {
+			if (previewUrl !== null) {
+				setFormDataPreview(containerRef.current);
+			}
 			if (!metadata.current[designView + "BoundingBox"]) {
 				// Temporarily set scale/rotation to defaults to measure base size
 				const originalTransform = imageRef.current.style.transform;
@@ -489,6 +492,12 @@ function ShirtDesign({
 			}
 		}
 	}, [previewUrl]);
+
+	useEffect(() => {
+		if (containerRef.current && previewUrl !== null) {
+			setFormDataPreview(containerRef.current);
+		}
+	}, [longSleeves, shirtColor]);
 
 	// Effect for global listeners
 	useEffect(() => {
@@ -532,6 +541,7 @@ function ShirtDesign({
 			...prev,
 			[designView + "Preview"]: {base64: base64String},
 		}));
+		console.log("Preview set for " + designView);
 	}
 
 	// Define handle positions (example for corners)
