@@ -9,8 +9,9 @@ import {StickerDesignComponent} from "./components/StickerDesignComponent";
 export default function StickersPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
-		size: "Medium",
+		dimensions: "1.5″ x 1.5″",
 		type: "Die Cut",
+		shape: "Circular",
 		design: null,
 		specialInstructions: "",
 		payment: "",
@@ -48,8 +49,8 @@ export default function StickersPage() {
 		"Confirm your order details and submit the order form.",
 	];
 	const summaryInfo = [
-		{header: "General Information", fields: ["Quantity", "Size"], required: [true, true]},
-		{header: "Sticker Type", fields: ["Type"], required: [true]},
+		{header: "General Information", fields: ["Quantity", "Dimensions"], required: [true, true]},
+		{header: "Sticker Type", fields: ["Type", "Shape"], required: [true, true]},
 		{header: "Design", fields: ["Design"], required: [false]},
 		{header: "Payment", fields: ["Email", "Payment"], required: [true, true]},
 	];

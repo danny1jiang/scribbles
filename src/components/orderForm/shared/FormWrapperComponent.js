@@ -18,9 +18,7 @@ export function FormWrapperComponent({
 }) {
 	const [step, setStep] = useState(0);
 	const [title, setTitle] = useState("General Information");
-	const [description, setDescription] = useState(
-		"Tell us about the basic information of your shirt order."
-	);
+	const [description, setDescription] = useState(getDefaultDescription(itemType));
 
 	function handleNext() {
 		setStep(step + 1);
@@ -35,6 +33,19 @@ export function FormWrapperComponent({
 	function handleTitleChange(step) {
 		setTitle(textObj.titles[step]);
 		setDescription(textObj.descriptions[step]);
+	}
+
+	function getDefaultDescription(itemType) {
+		switch (itemType) {
+			case "shirt":
+				return "Tell us about the basic information of your shirt order.";
+			case "sticker":
+				return "Tell us about the basic information of your sticker order.";
+			case "custom":
+				return "Tell us about the basic information of your custom order.";
+			default:
+				return "Tell us about the basic information of your order.";
+		}
 	}
 
 	// Generate the content based on the current step
@@ -70,7 +81,7 @@ export function FormWrapperComponent({
 					itemType={itemType}
 				/>
 
-				<div className="flex flex-row justify-end items-center w-full mt-6">
+				<div className="flex flex-row justify-end items-center w-full mt-10">
 					{step === 0 ? (
 						<CustomButton text={"Back"} href={"/"} />
 					) : (
@@ -86,7 +97,7 @@ export function FormWrapperComponent({
 
 	return (
 		<div className="flex flex-col relative items-center justify-start h-screen">
-			<div className="w-full mb-[1.5%] mt-[1.5%]">
+			<div className="flex flex-row items-center w-full mb-[1.5%] mt-[1.5%]">
 				<FormProgressComponent
 					onClick={(index) => {
 						setStep(index);

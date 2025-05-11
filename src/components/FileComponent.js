@@ -94,7 +94,7 @@ export const FileComponent = memo(function FileComponent({className, onChange, f
 
 	// Update selectedFile when file prop changes
 	useEffect(() => {
-		if (file && file !== selectedFile) {
+		if (file !== selectedFile) {
 			setSelectedFile(file);
 		}
 	}, [file, selectedFile]);

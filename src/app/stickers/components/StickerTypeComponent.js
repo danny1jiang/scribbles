@@ -13,6 +13,17 @@ export function StickerTypeComponent({setFormData, formData, styles}) {
 					setFormData({...formData, type: selected});
 				}}
 			/>
+			<CustomText className={"mt-5"} type={"medium"}>
+				Sticker Shape
+			</CustomText>
+			<SelectComponent
+				className={styles.textBox + " " + styles.textBoxNormal}
+				options={["Circular", "Rectangular"]}
+				defaultValue={formData.shape}
+				onChange={(selected) => {
+					setFormData({...formData, shape: selected});
+				}}
+			/>
 		</div>
 	);
 }

@@ -1,6 +1,8 @@
 "use server";
 import {google} from "googleapis";
 
+const imageKeys = ["design", "front", "back", "frontPreview", "backPreview"];
+
 export async function getSheetData() {
 	const glAuth = await google.auth.getClient({
 		projectId: process.env.PROJECT_ID,
@@ -61,20 +63,37 @@ export async function setSheetData(formData, itemType) {
 			valueInputOption: "USER_ENTERED",
 			requestBody: {
 				values: [
-					Object.keys(formData).map((key) => {
-						if (key === "design" && formData[key] !== null) {
-							return "Design attached in note"; // Placeholder text in the cell
-						} else {
-							return formData[key];
-						}
-					}),
+					[
+						"",
+						...Object.keys(formData).map((key) => {
+							if (imageKeys.includes(key)) {
+								if (formData[key] !== null) {
+									return "Design attached in note";
+								} else {
+									return "None";
+								}
+							} else {
+								return formData[key];
+							}
+						}),
+					],
 				],
 			},
 		});
 
 		// If there's design data, add it as a note
-		// If there's design data, add it as a note
-		if (formData.design && formData.design !== null) {
+		let designDataArr = [];
+		let designDataNames = [];
+		imageKeys.forEach((key) => {
+			if (formData[key] && formData[key] !== null) {
+				console.log(key);
+				designDataArr.push(formData[key]);
+				designDataNames.push(key);
+			}
+		});
+		for (let i = 0; i < designDataArr.length; i++) {
+			const designData = designDataArr[i];
+			const designDataName = designDataNames[i];
 			// Get the row number of the newly added row
 			const updatedRange = response.data.updates.updatedRange;
 
@@ -86,19 +105,7 @@ export async function setSheetData(formData, itemType) {
 				const rowNumber = rowMatch[4];
 
 				// Find the column index for design
-				const designIndex = Object.keys(formData).indexOf("design");
-
-				// Rest of your code remains the same...
-
-				// Prepare design data - handle different possible formats
-				let designData;
-				if (typeof formData.design === "object" && formData.design.base64) {
-					designData = formData.design.base64;
-				} else if (typeof formData.design === "string") {
-					designData = formData.design;
-				} else {
-					designData = JSON.stringify(formData.design);
-				}
+				const designIndex = Object.keys(formData).indexOf(designDataName) + 1;
 
 				// Get sheet ID
 				const sheetId = await getSheetIdByName(
@@ -126,7 +133,7 @@ export async function setSheetData(formData, itemType) {
 										{
 											values: [
 												{
-													note: designData,
+													note: designData.base64,
 												},
 											],
 										},

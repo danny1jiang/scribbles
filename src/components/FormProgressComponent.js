@@ -49,8 +49,8 @@ export function FormProgressComponent({steps, currentStep, onClick}) {
 	}, [currentStep, steps.length]); // Remove highlightedCircles from dependencies
 
 	return (
-		<div className="flex flex-col items-center w-full mb-6">
-			<div className="relative w-full max-w-4xl">
+		<div className="@container flex flex-col items-center w-full mb-6">
+			<div className="relative w-full max-w-8/10">
 				{/* Progress lines - adjusted to align with circle centers */}
 				<div className="absolute top-5 w-[calc(100%-8px)] left-[4px]">
 					{/* Background line (gray) */}
@@ -91,7 +91,7 @@ export function FormProgressComponent({steps, currentStep, onClick}) {
 
 							<CustomText
 								type={"small"}
-								className={`text-center top-9 absolute transition-colors duration-200 select-none ${
+								className={`invisible @md:visible text-center top-9 absolute transition-colors duration-200 select-none ${
 									highlightedCircles[index]
 										? "text-(--color-primary)"
 										: "text-(--color-accent)"

@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {FormWrapperComponent} from "../../components/orderForm/shared/FormWrapperComponent";
 import {ShirtBasicInfoComponent} from "./components/ShirtBasicInfo";
 import {ShirtMaterialsComponent} from "./components/ShirtMaterialsComponent";
@@ -11,12 +11,26 @@ export default function ShirtPage() {
 		quantity: 1,
 		size: "Medium",
 		material: "Cotton",
-		design: null,
-		side: "Front",
+		front: null,
+		frontPreview: null,
+		back: null,
+		backPreview: null,
+		sleeve: "Short Sleeve",
 		color: "White",
 		specialInstructions: "",
 		payment: "",
 		email: "",
+	});
+
+	const metadata = useRef({
+		frontScale: 1,
+		frontPosition: {x: 0, y: 0},
+		frontRotation: 0,
+		frontBoundingBox: null,
+		backScale: 1,
+		backPosition: {x: 0, y: 0},
+		backRotation: 0,
+		backBoundingBox: null,
 	});
 
 	const componentArray = [
@@ -34,6 +48,7 @@ export default function ShirtPage() {
 		/>,
 		<ShirtDesignComponent
 			key={2}
+			metadata={metadata}
 			setFormData={setFormData}
 			formData={formData}
 			styles={styles}
@@ -52,7 +67,11 @@ export default function ShirtPage() {
 	const summaryInfo = [
 		{header: "General Information", fields: ["Quantity", "Size"], required: [true, true]},
 		{header: "Material", fields: ["Material"], required: [true]},
-		{header: "Design", fields: ["Design", "Side", "Color"], required: [false, false, false]},
+		{
+			header: "Design",
+			fields: ["Front", "Back", "Sleeve", "Color"],
+			required: [false, false, true, true],
+		},
 		{header: "Payment", fields: ["Email", "Payment"], required: [true, true]},
 	];
 

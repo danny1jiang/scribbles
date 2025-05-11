@@ -4,16 +4,19 @@ import {CustomText} from "@/components/CustomText";
 import {ClipboardPen, Shirt, StickyNote} from "lucide-react";
 import Link from "next/link";
 import {motion} from "framer-motion";
+import Image from "next/image";
+import ScribblesLogo from "@/../public/ScribblesLogo.png";
 
 export default function Home() {
 	return (
-		<div className="flex flex-col flex-1 items-center justify-center min-h-screen gap-[4rem] p-[3rem] font-[family-name:var(--font-geist-sans)] text-center">
+		<div className="flex flex-col flex-1 items-center justify-center min-h-screen gap-[4rem] pb-[3rem] font-[family-name:var(--font-geist-sans)] text-center">
 			<motion.div
 				transition={{duration: 0.5, type: "tween", delay: 0, ease: "easeOut"}}
 				animate={{y: 0, opacity: 1}}
 				initial={{y: 15, opacity: 0}}
 				className="flex flex-col items-center justify-center"
 			>
+				<Image alt={"Scribbes Logo"} src={ScribblesLogo} width={500} />
 				<CustomText type={"header"}>What would you like to order?</CustomText>
 				<CustomText type={"medium"}>
 					Choose one of the following options to begin your order.
