@@ -290,32 +290,31 @@ function ShirtDesign({
 
 	// --- Interaction Handlers ---
 	const handleMouseDown = useCallback(
-		(e, handleType = "drag") => {
+		(eventData, handleType = "drag") => {
+			// Changed 'e' to 'eventData'
 			if (!previewUrl || !imageRef.current) return;
-			e.preventDefault();
-			e.stopPropagation();
+			// e.preventDefault(); // REMOVED - To be handled by the actual event listener
+			// e.stopPropagation(); // REMOVED - To be handled by the actual event listener
 
 			const center = getCenter();
-			const dx = e.clientX - center.x;
-			const dy = e.clientY - center.y;
+			const dx = eventData.clientX - center.x; // Use eventData
+			const dy = eventData.clientY - center.y; // Use eventData
 			const dist = Math.sqrt(dx * dx + dy * dy);
 			const angle = Math.atan2(dy, dx) * (180 / Math.PI);
 
 			let mode = "drag"; // Default to drag
-			let cursor = "grabbing";
 
 			// Determine mode based on handleType or proximity for rotation
 			if (handleType.startsWith("handle-")) {
 				mode = "scale";
 			} else if (handleType === "rotate") {
-				// If a dedicated rotation handle is clicked
 				mode = "rotate";
 			}
 
 			interactionRef.current = {
 				mode: mode,
-				startX: e.clientX,
-				startY: e.clientY,
+				startX: eventData.clientX, // Use eventData
+				startY: eventData.clientY, // Use eventData
 				elementX: position.x,
 				elementY: position.y,
 				startScale: scale,
@@ -336,12 +335,26 @@ function ShirtDesign({
 	const handleMouseMove = useCallback(
 		(e) => {
 			if (!isInteracting) return;
+
 			// Prevent default scroll/zoom behavior on touch devices
-			if (e.touches) {
-				e.preventDefault();
+			// More robust check for preventDefault
+			if (e && typeof e.preventDefault === "function") {
+				if (e.touches) {
+					// Check if it's a touch-like event that might scroll
+					e.preventDefault();
+				}
 			}
 
-			const event = e.touches ? e.touches[0] : e; // Use touch or mouse event
+			const event = e && e.touches ? e.touches[0] : e;
+			// If, after potentially accessing e.touches[0], event is null or undefined, bail out.
+			if (
+				!event ||
+				typeof event.clientX === "undefined" ||
+				typeof event.clientY === "undefined"
+			) {
+				// console.warn('MouseMove: Invalid event object', e, event);
+				return;
+			}
 
 			const {
 				mode,
@@ -507,23 +520,25 @@ function ShirtDesign({
 
 	// Effect for global listeners
 	useEffect(() => {
+		const touchMoveOptions = {passive: false}; // Define options once
+
 		if (isInteracting) {
 			window.addEventListener("mousemove", handleMouseMove);
 			window.addEventListener("mouseup", handleMouseUp);
-			window.addEventListener("touchmove", handleMouseMove);
+			window.addEventListener("touchmove", handleMouseMove, touchMoveOptions);
 			window.addEventListener("touchend", handleMouseUp);
 			window.addEventListener("touchcancel", handleMouseUp);
 		} else {
 			window.removeEventListener("mousemove", handleMouseMove);
 			window.removeEventListener("mouseup", handleMouseUp);
-			window.removeEventListener("touchmove", handleMouseMove);
+			window.removeEventListener("touchmove", handleMouseMove, touchMoveOptions); // Use options for removal
 			window.removeEventListener("touchend", handleMouseUp);
 			window.removeEventListener("touchcancel", handleMouseUp);
 		}
 		return () => {
 			window.removeEventListener("mousemove", handleMouseMove);
 			window.removeEventListener("mouseup", handleMouseUp);
-			window.removeEventListener("touchmove", handleMouseMove);
+			window.removeEventListener("touchmove", handleMouseMove, touchMoveOptions); // Use options for removal in cleanup
 			window.removeEventListener("touchend", handleMouseUp);
 			window.removeEventListener("touchcancel", handleMouseUp);
 		};
@@ -598,16 +613,24 @@ function ShirtDesign({
 								// Apply transform to this container div
 								transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px)) rotate(${rotation}deg) scale(${scale})`,
 								transformOrigin: "center center",
+								touchAction: "none", // Prevent default touch actions like scrolling
+								overscrollBehavior: "contain", // Prevent scroll chaining
 							}}
 							onMouseDown={(e) => {
+								// e is MouseEvent
+								e.preventDefault();
+								e.stopPropagation();
 								if (!isSelected) {
-									handleImageClick(e);
+									handleImageClick(e); // e is MouseEvent
 								}
 								handleMouseDown(e, "drag");
 							}} // Default drag on image body
 							onTouchStart={(e) => {
+								// e is TouchEvent
+								e.preventDefault();
+								e.stopPropagation();
 								if (!isSelected) {
-									handleImageClick(e);
+									handleImageClick(e); // e is TouchEvent
 								}
 								handleMouseDown(e.touches[0], "drag");
 							}} // Default drag on image body
@@ -658,8 +681,15 @@ function ShirtDesign({
 													: "nesw-resize"
 											}`,
 										}}
-										onMouseDown={(e) => handleMouseDown(e, `handle-${handle}`)}
+										onMouseDown={(e) => {
+											// e is MouseEvent
+											e.preventDefault();
+											e.stopPropagation();
+											handleMouseDown(e, `handle-${handle}`);
+										}}
 										onTouchStart={(e) => {
+											// e is TouchEvent
+											e.preventDefault();
 											e.stopPropagation(); // Prevent triggering drag on image itself
 											handleMouseDown(e.touches[0], `handle-${handle}`);
 										}}
@@ -676,8 +706,15 @@ function ShirtDesign({
 									transform: "translateX(-50%) translateY(-100%)", // Position above the top-center edge
 									cursor: "grab", // Changed from 'grabbing' to 'grab' for consistency
 								}}
-								onMouseDown={(e) => handleMouseDown(e, "rotate")} // Ensure correct type
+								onMouseDown={(e) => {
+									// e is MouseEvent
+									e.preventDefault();
+									e.stopPropagation();
+									handleMouseDown(e, "rotate");
+								}} // Ensure correct type
 								onTouchStart={(e) => {
+									// e is TouchEvent
+									e.preventDefault();
 									e.stopPropagation(); // Prevent triggering drag on image itself
 									handleMouseDown(e.touches[0], "rotate");
 								}}
