@@ -336,7 +336,12 @@ function ShirtDesign({
 	const handleMouseMove = useCallback(
 		(e) => {
 			if (!isInteracting) return;
-			e.preventDefault();
+			// Prevent default scroll/zoom behavior on touch devices
+			if (e.touches) {
+				e.preventDefault();
+			}
+
+			const event = e.touches ? e.touches[0] : e; // Use touch or mouse event
 
 			const {
 				mode,
@@ -353,15 +358,15 @@ function ShirtDesign({
 				handle,
 			} = interactionRef.current;
 
-			const currentDx = e.clientX - centerX;
-			const currentDy = e.clientY - centerY;
+			const currentDx = event.clientX - centerX;
+			const currentDy = event.clientY - centerY;
 
 			const imageRect = imageRef.current.getBoundingClientRect();
 			const containerRect = containerRef.current.getBoundingClientRect();
 
 			if (mode === "drag") {
-				const dx = e.clientX - startX;
-				const dy = e.clientY - startY;
+				const dx = event.clientX - startX;
+				const dy = event.clientY - startY;
 				const offsetX = containerRect.width / 2 - imageRect.width / 2;
 				const offsetY = containerRect.height / 2 - imageRect.height / 2;
 				let finalX = elementX + dx;
@@ -424,9 +429,10 @@ function ShirtDesign({
 			interactionRef.current.mode = null;
 			if (imageRef.current) {
 				imageRef.current.style.userSelect = "";
+				// Re-enable touch actions on the image if needed, though usually handled by browser
 			}
 		}
-	}, [isInteracting]);
+	}, [isInteracting, setFormData, designView]);
 
 	const handleImageClick = useCallback(
 		(e) => {
@@ -653,6 +659,10 @@ function ShirtDesign({
 											}`,
 										}}
 										onMouseDown={(e) => handleMouseDown(e, `handle-${handle}`)}
+										onTouchStart={(e) => {
+											e.stopPropagation(); // Prevent triggering drag on image itself
+											handleMouseDown(e.touches[0], `handle-${handle}`);
+										}}
 									/>
 								);
 							})}
@@ -664,9 +674,13 @@ function ShirtDesign({
 									top: "-0.625rem", // Offset half handle size
 									left: "50%",
 									transform: "translateX(-50%) translateY(-100%)", // Position above the top-center edge
-									cursor: "grab",
+									cursor: "grab", // Changed from 'grabbing' to 'grab' for consistency
 								}}
 								onMouseDown={(e) => handleMouseDown(e, "rotate")} // Ensure correct type
+								onTouchStart={(e) => {
+									e.stopPropagation(); // Prevent triggering drag on image itself
+									handleMouseDown(e.touches[0], "rotate");
+								}}
 							></div>
 						</div>
 					)}
