@@ -504,24 +504,36 @@ function ShirtDesign({
 		if (isInteracting) {
 			window.addEventListener("mousemove", handleMouseMove);
 			window.addEventListener("mouseup", handleMouseUp);
+			window.addEventListener("touchmove", handleMouseMove);
+			window.addEventListener("touchend", handleMouseUp);
+			window.addEventListener("touchcancel", handleMouseUp);
 		} else {
 			window.removeEventListener("mousemove", handleMouseMove);
 			window.removeEventListener("mouseup", handleMouseUp);
+			window.removeEventListener("touchmove", handleMouseMove);
+			window.removeEventListener("touchend", handleMouseUp);
+			window.removeEventListener("touchcancel", handleMouseUp);
 		}
 		return () => {
 			window.removeEventListener("mousemove", handleMouseMove);
 			window.removeEventListener("mouseup", handleMouseUp);
+			window.removeEventListener("touchmove", handleMouseMove);
+			window.removeEventListener("touchend", handleMouseUp);
+			window.removeEventListener("touchcancel", handleMouseUp);
 		};
 	}, [isInteracting, handleMouseMove, handleMouseUp]);
 
 	useEffect(() => {
 		if (isSelected) {
 			document.addEventListener("mousedown", handleClickOutside);
+			document.addEventListener("touchstart", handleClickOutside);
 		} else {
 			document.removeEventListener("mousedown", handleClickOutside);
+			document.removeEventListener("touchstart", handleClickOutside);
 		}
 		return () => {
 			document.removeEventListener("mousedown", handleClickOutside);
+			document.removeEventListener("touchstart", handleClickOutside);
 		};
 	}, [isSelected, handleClickOutside]);
 
@@ -541,7 +553,6 @@ function ShirtDesign({
 			...prev,
 			[designView + "Preview"]: {base64: base64String},
 		}));
-		console.log("Preview set for " + designView);
 	}
 
 	// Define handle positions (example for corners)
@@ -587,6 +598,12 @@ function ShirtDesign({
 									handleImageClick(e);
 								}
 								handleMouseDown(e, "drag");
+							}} // Default drag on image body
+							onTouchStart={(e) => {
+								if (!isSelected) {
+									handleImageClick(e);
+								}
+								handleMouseDown(e.touches[0], "drag");
 							}} // Default drag on image body
 						>
 							{/* Design image */}
