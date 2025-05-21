@@ -9,7 +9,7 @@ import {ShirtDesignComponent} from "./components/ShirtDesignComponent";
 export default function ShirtPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
-		size: "Medium",
+		size: "Youth Small",
 		material: "Cotton",
 		front: null,
 		frontPreview: null,

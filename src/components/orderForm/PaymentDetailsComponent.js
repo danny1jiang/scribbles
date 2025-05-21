@@ -68,14 +68,14 @@ export function PaymentDetailsComponent({styles, setFormData, formData, onNext})
 				{emailError && <div className="mt-1 text-[#CC0033] text-sm">{emailError}</div>}
 
 				<CustomText type={"medium"} className="mb-2 mt-5">
-					Payment Details
+					Payment Method
 				</CustomText>
 
 				<div className="w-full">
 					<textarea
 						value={paymentDetails}
 						onChange={handlePaymentDetailsChange}
-						placeholder="Describe your preferred payment method here..."
+						placeholder="Describe your preferred payment method here... (Ex: Credit Card, Transfer between VCS accounts, etc.)"
 						className="w-full p-2 py-2 border border-(--color-gray) rounded-lg h-32 resize-none"
 					/>
 					<div className="mt-1 text-right text-(--color-accent)">

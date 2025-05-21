@@ -7,7 +7,7 @@ import Image from "next/image";
 import {useState, useEffect, useMemo, useCallback, memo, useRef} from "react";
 import {LongSleeveBack, LongSleeveFront, TshirtBack, TshirtFront} from "./ShirtOutlines";
 import {toPng} from "html-to-image";
-import {X} from "lucide-react";
+import {Plus, X} from "lucide-react";
 
 // Memoize the component to prevent unnecessary re-renders
 export const ShirtDesignComponent = memo(function ShirtDesignComponent({
@@ -231,8 +231,42 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 					Choose Shirt Color
 				</CustomText>
 
-				<div className="flex flex-row flex-wrap mt-2 mb-4 gap-2">{colorButtons}</div>
+				<div className="flex flex-row flex-wrap mt-2 gap-2">
+					{colorButtons}
+					<div
+						onClick={() => handleColorChange()}
+						className={`w-8 flex justify-center items-center h-8 rounded-full cursor-pointer border border-gray-300 ${
+							!Object.keys(colorHexMap).includes(shirtColor)
+								? "ring-2 ring-(--color-secondary)"
+								: ""
+						}`}
+						style={{backgroundColor: "white"}}
+					>
+						<Plus color="#999999" />
+					</div>
+				</div>
 			</div>
+			{Object.keys(colorHexMap).includes(shirtColor) ? null : (
+				<div className="w-full">
+					<CustomText type={"medium"} className="mb-2 mt-4">
+						Custom Shirt Color
+					</CustomText>
+
+					<input
+						type="text"
+						value={shirtColor}
+						onChange={(e) => handleColorChange(e.target.value)}
+						placeholder="Enter a custom color"
+						className={
+							styles.textBox +
+							" " +
+							styles.textBoxNormal +
+							" " +
+							styles.textBoxPadding
+						}
+					/>
+				</div>
+			)}
 		</div>
 	);
 });

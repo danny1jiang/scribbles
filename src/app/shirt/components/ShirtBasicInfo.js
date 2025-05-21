@@ -20,7 +20,16 @@ export function ShirtBasicInfoComponent({setFormData, formData, styles}) {
 			</CustomText>
 			<SelectComponent
 				className={styles.textBox + " " + styles.textBoxNormal}
-				options={["Small", "Medium", "Large"]}
+				options={[
+					"Youth Small",
+					"Youth Medium",
+					"Youth Large",
+					"Adult Small",
+					"Adult Medium",
+					"Adult Large",
+					"Adult 2XL",
+					"Adult 3XL",
+				]}
 				defaultValue={formData.size}
 				onChange={(selected) => {
 					setFormData({...formData, size: selected});

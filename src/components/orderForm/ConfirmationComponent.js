@@ -140,21 +140,21 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 			// Color hex values mapping for visual indicators
 			const colorHexMap = {
 				White: "#FFFFFF",
-				Black: "#000000",
 				Navy: "#000080",
-				Red: "#FF0000",
-				Green: "#008000",
 				Gray: "#808080",
-				Blue: "#0000FF",
-				Yellow: "#FFFF00",
 			};
+
+			let className = "w-0 h-0";
+			if (Object.keys(colorHexMap).includes(value)) {
+				className = `w-4 h-4 rounded-full mr-2 ${
+					value === "White" ? "border border-gray-300" : ""
+				}`;
+			}
 
 			return (
 				<div className="flex items-center">
 					<div
-						className={`w-4 h-4 rounded-full mr-2 ${
-							value === "White" ? "border border-gray-300" : ""
-						}`}
+						className={className}
 						style={{backgroundColor: colorHexMap[value] || "#FFFFFF"}}
 					></div>
 					<CustomText>{value}</CustomText>
