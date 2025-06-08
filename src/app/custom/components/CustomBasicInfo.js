@@ -24,11 +24,11 @@ export function CustomBasicInfoComponent({setFormData, formData, styles}) {
 				className={
 					styles.textBox + " " + styles.textBoxNormal + " " + styles.textBoxPadding
 				}
-				defaultValue={formData.quantity}
+				type="text"
+				value={formData.quantity}
 				onChange={(e) => {
-					setFormData({...formData, quantity: e.target.value});
+					setFormData({...formData, quantity: e.target.value.replace(/[^0-9]/g, "")});
 				}}
-				type="number"
 			/>
 			<div className="mt-5 flex flex-col w-full">
 				<CustomText type={"medium"} className="mb-2">

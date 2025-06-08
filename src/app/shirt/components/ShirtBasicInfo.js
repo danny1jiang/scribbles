@@ -9,11 +9,11 @@ export function ShirtBasicInfoComponent({setFormData, formData, styles}) {
 				className={
 					styles.textBox + " " + styles.textBoxNormal + " " + styles.textBoxPadding
 				}
-				defaultValue={formData.quantity}
+				type="text"
+				value={formData.quantity}
 				onChange={(e) => {
-					setFormData({...formData, quantity: e.target.value});
+					setFormData({...formData, quantity: e.target.value.replace(/[^0-9]/g, "")});
 				}}
-				type="number"
 			/>
 			<CustomText className={"mt-5"} type={"medium"}>
 				Size
