@@ -10,6 +10,7 @@ export default function ShirtPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
 		size: "Youth Small",
+		requestedDeliveryDate: new Date(),
 		material: "Cotton",
 		front: null,
 		frontPreview: null,
@@ -65,7 +66,11 @@ export default function ShirtPage() {
 		"Confirm your order details and submit the order form.",
 	];
 	const summaryInfo = [
-		{header: "General Information", fields: ["Quantity", "Size"], required: [true, true]},
+		{
+			header: "General Information",
+			fields: ["Quantity", "Size", "Requested Delivery Date"],
+			required: [true, true, true],
+		},
 		{header: "Material", fields: ["Material"], required: [true]},
 		{
 			header: "Design",

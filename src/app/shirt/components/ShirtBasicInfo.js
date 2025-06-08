@@ -1,5 +1,7 @@
 import {CustomText} from "@/components/CustomText";
 import {SelectComponent} from "@/components/SelectComponent";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export function ShirtBasicInfoComponent({setFormData, formData, styles}) {
 	return (
@@ -34,6 +36,19 @@ export function ShirtBasicInfoComponent({setFormData, formData, styles}) {
 				onChange={(selected) => {
 					setFormData({...formData, size: selected});
 				}}
+			/>
+			<CustomText className={"mt-5"} type={"medium"}>
+				Requested Delivery Date
+			</CustomText>
+			<DatePicker
+				className={
+					styles.textBox + " " + styles.textBoxNormal + " " + styles.textBoxPadding
+				}
+				wrapperClassName={"w-full"}
+				popperPlacement="bottom-start"
+				showPopperArrow={false}
+				selected={formData.requestedDeliveryDate || new Date()}
+				onChange={(date) => setFormData({...formData, requestedDeliveryDate: date})}
 			/>
 		</div>
 	);

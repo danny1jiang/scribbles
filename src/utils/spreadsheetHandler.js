@@ -72,9 +72,21 @@ export async function setSheetData(formData, itemType) {
 								} else {
 									return "None";
 								}
+							} else if (key === "requestedDeliveryDate") {
+								// Format date to a more readable format
+								return formData[key].toLocaleDateString("en-US", {
+									year: "numeric",
+									month: "long",
+									day: "numeric",
+								});
 							} else {
 								return formData[key];
 							}
+						}),
+						new Date().toLocaleDateString("en-US", {
+							year: "numeric",
+							month: "long",
+							day: "numeric",
 						}),
 					],
 				],

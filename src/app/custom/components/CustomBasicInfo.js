@@ -1,6 +1,7 @@
 import {CustomText} from "@/components/CustomText";
-import {SelectComponent} from "@/components/SelectComponent";
 import {useState} from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const maxChars = 500;
 
@@ -30,6 +31,21 @@ export function CustomBasicInfoComponent({setFormData, formData, styles}) {
 					setFormData({...formData, quantity: e.target.value.replace(/[^0-9]/g, "")});
 				}}
 			/>
+
+			<CustomText className={"mt-5"} type={"medium"}>
+				Requested Delivery Date
+			</CustomText>
+			<DatePicker
+				className={
+					styles.textBox + " " + styles.textBoxNormal + " " + styles.textBoxPadding
+				}
+				wrapperClassName={"w-full"}
+				popperPlacement="bottom-start"
+				showPopperArrow={false}
+				selected={formData.requestedDeliveryDate || new Date()}
+				onChange={(date) => setFormData({...formData, requestedDeliveryDate: date})}
+			/>
+
 			<div className="mt-5 flex flex-col w-full">
 				<CustomText type={"medium"} className="mb-2">
 					Item Description

@@ -8,6 +8,7 @@ import {CustomDesignComponent} from "./components/CustomDesignComponent";
 export default function ShirtPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
+		requestedDeliveryDate: new Date(),
 		description: "",
 		design: null,
 		specialInstructions: "",
@@ -41,8 +42,8 @@ export default function ShirtPage() {
 	const summaryInfo = [
 		{
 			header: "General Information",
-			fields: ["Quantity", "Description"],
-			required: [true, true],
+			fields: ["Quantity", "Requested Delivery Date", "Description"],
+			required: [true, true, true],
 		},
 		{header: "Design", fields: ["Design"], required: [false]},
 		{header: "Payment", fields: ["Email", "Payment"], required: [true, true]},

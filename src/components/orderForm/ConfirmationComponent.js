@@ -29,7 +29,9 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 		// Extract all fields from summaryInfo and check if they're missing
 		summaryInfo.forEach((section) => {
 			section.fields.forEach((field, index) => {
-				const fieldName = field.toLowerCase();
+				const splitField = field.split(" ");
+				splitField[0] = splitField[0].toLowerCase();
+				const fieldName = splitField.join("");
 				const isRequired = section.required[index];
 
 				if (!isRequired) {
@@ -127,12 +129,23 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 
 	// Helper function to get field value with proper formatting
 	const getFieldValue = (field) => {
-		const fieldName = field.toLowerCase();
+		const splitField = field.split(" ");
+		splitField[0] = splitField[0].toLowerCase();
+		const fieldName = splitField.join("");
+
 		const value = formData?.[fieldName];
 		const isMissingField = isMissing[fieldName];
 
 		if ((fieldName === "design" || fieldName === "front" || fieldName === "back") && value) {
 			return value.name;
+		}
+		if (fieldName === "requestedDeliveryDate" && value) {
+			// Format date to a more readable format
+			return value.toLocaleDateString("en-US", {
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+			});
 		}
 
 		// Special handling for displaying color with visual indicator
