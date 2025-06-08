@@ -9,7 +9,7 @@ import ScribblesLogo from "@/../public/ScribblesLogo.png";
 
 export default function Home() {
 	return (
-		<div className="flex flex-col flex-1 items-center justify-center min-h-screen gap-[4rem] pb-[3rem] font-[family-name:var(--font-geist-sans)] text-center">
+		<div className="flex flex-col flex-1 items-center justify-center h-dvh gap-[4rem] pb-[3rem] font-[family-name:var(--font-geist-sans)] text-center">
 			<motion.div
 				transition={{duration: 0.5, type: "tween", delay: 0, ease: "easeOut"}}
 				animate={{y: 0, opacity: 1}}
