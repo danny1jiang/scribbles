@@ -43,29 +43,37 @@ export function ShirtBasicInfoComponent({setFormData, formData, styles}) {
 
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
-			<CustomText type={"medium"}>Size and Quantity Selection</CustomText>
+			<CustomText type={"medium"}>Requested Delivery Date</CustomText>
+			<DatePicker
+				className={
+					styles.textBox + " " + styles.textBoxNormal + " " + styles.textBoxPadding
+				}
+				wrapperClassName={"w-full"}
+				popperPlacement="bottom-start"
+				showPopperArrow={false}
+				selected={formData.requestedDeliveryDate || new Date()}
+				onChange={(date) => setFormData({...formData, requestedDeliveryDate: date})}
+			/>
+			<CustomText className={"mt-5"} type={"medium"}>
+				Size and Quantity Selection
+			</CustomText>
 			<div className="w-full mt-3 overflow-hidden rounded-lg border border-(--color-gray)">
 				<table className="w-full">
 					<thead>
-						<tr className="bg-(--color-light-gray)">
+						<tr>
 							<th className="text-left py-3 px-4 font-medium text-lg">Size</th>
 							<th className="text-left py-3 px-4 font-medium text-lg">Quantity</th>
 						</tr>
 					</thead>
 					<tbody>
 						{sizes.map((size, index) => (
-							<tr
-								key={size}
-								className={`${
-									index % 2 === 0 ? "bg-white" : "bg-gray-50"
-								} hover:bg-blue-50 transition-colors duration-150`}
-							>
-								<td className="py-3 px-4 border-t border-(--color-light-gray)">
+							<tr key={size}>
+								<td className="py-3 px-4 border-t border-(--color-gray) w-1/2">
 									<CustomText>{size}</CustomText>
 								</td>
-								<td className="py-3 px-4 border-t border-(--color-light-gray)">
+								<td className="py-3 px-4 border-t border-(--color-gray) w-1/2">
 									<input
-										className={`${styles.textBox} ${styles.textBoxPadding} w-20 h-10 text-center`}
+										className={`${styles.textBox} ${styles.textBoxPadding} w-full h-10 text-start pl-2`}
 										type="text"
 										value={formData.sizes?.[size] || 0}
 										onChange={(e) => handleQuantityChange(size, e.target.value)}
@@ -77,20 +85,6 @@ export function ShirtBasicInfoComponent({setFormData, formData, styles}) {
 					</tbody>
 				</table>
 			</div>
-
-			<CustomText className={"mt-5"} type={"medium"}>
-				Requested Delivery Date
-			</CustomText>
-			<DatePicker
-				className={
-					styles.textBox + " " + styles.textBoxNormal + " " + styles.textBoxPadding
-				}
-				wrapperClassName={"w-full"}
-				popperPlacement="bottom-start"
-				showPopperArrow={false}
-				selected={formData.requestedDeliveryDate || new Date()}
-				onChange={(date) => setFormData({...formData, requestedDeliveryDate: date})}
-			/>
 		</div>
 	);
 }
