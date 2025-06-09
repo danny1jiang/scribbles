@@ -8,8 +8,17 @@ import {ShirtDesignComponent} from "./components/ShirtDesignComponent";
 
 export default function ShirtPage() {
 	const [formData, setFormData] = useState({
-		quantity: 1,
-		size: "Medium",
+		requestedDeliveryDate: new Date(),
+		sizes: {
+			"Youth Small": 0,
+			"Youth Medium": 0,
+			"Youth Large": 0,
+			"Adult Small": 0,
+			"Adult Medium": 0,
+			"Adult Large": 0,
+			"Adult 2XL": 0,
+			"Adult 3XL": 0,
+		},
 		material: "Cotton",
 		front: null,
 		frontPreview: null,
@@ -65,7 +74,11 @@ export default function ShirtPage() {
 		"Confirm your order details and submit the order form.",
 	];
 	const summaryInfo = [
-		{header: "General Information", fields: ["Quantity", "Size"], required: [true, true]},
+		{
+			header: "General Information",
+			fields: ["Requested Delivery Date", "Sizes"],
+			required: [true, true],
+		},
 		{header: "Material", fields: ["Material"], required: [true]},
 		{
 			header: "Design",

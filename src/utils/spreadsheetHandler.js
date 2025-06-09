@@ -72,9 +72,28 @@ export async function setSheetData(formData, itemType) {
 								} else {
 									return "None";
 								}
+							} else if (key === "requestedDeliveryDate") {
+								// Format date to a more readable format
+								return formData[key].toLocaleDateString("en-US", {
+									year: "numeric",
+									month: "long",
+									day: "numeric",
+								});
+							} else if (key === "sizes") {
+								// Format sizes object into a readable string
+								const sizesWithQuantities = Object.entries(formData[key])
+									.filter(([size, quantity]) => quantity > 0)
+									.map(([size, quantity]) => `${size}: ${quantity}`)
+									.join(", ");
+								return sizesWithQuantities || "No sizes selected";
 							} else {
 								return formData[key];
 							}
+						}),
+						new Date().toLocaleDateString("en-US", {
+							year: "numeric",
+							month: "long",
+							day: "numeric",
 						}),
 					],
 				],

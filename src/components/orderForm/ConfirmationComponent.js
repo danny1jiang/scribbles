@@ -29,13 +29,26 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 		// Extract all fields from summaryInfo and check if they're missing
 		summaryInfo.forEach((section) => {
 			section.fields.forEach((field, index) => {
-				const fieldName = field.toLowerCase();
+				const splitField = field.split(" ");
+				splitField[0] = splitField[0].toLowerCase();
+				const fieldName = splitField.join("");
 				const isRequired = section.required[index];
 
 				if (!isRequired) {
 					result[fieldName] = false; // Not required, so not missing
 				} else if (fieldName === "payment") {
 					result[fieldName] = !formData?.[fieldName] || formData[fieldName].trim() === "";
+				} else if (fieldName === "sizes") {
+					// Check if at least one size has a quantity > 0
+					const sizesObj = formData?.[fieldName];
+					if (!sizesObj) {
+						result[fieldName] = true;
+					} else {
+						const hasQuantity = Object.values(sizesObj).some(
+							(quantity) => quantity > 0
+						);
+						result[fieldName] = !hasQuantity;
+					}
 				} else {
 					result[fieldName] = !formData?.[fieldName];
 				}
@@ -127,34 +140,59 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 
 	// Helper function to get field value with proper formatting
 	const getFieldValue = (field) => {
-		const fieldName = field.toLowerCase();
+		const splitField = field.split(" ");
+		splitField[0] = splitField[0].toLowerCase();
+		const fieldName = splitField.join("");
+
 		const value = formData?.[fieldName];
 		const isMissingField = isMissing[fieldName];
 
 		if ((fieldName === "design" || fieldName === "front" || fieldName === "back") && value) {
 			return value.name;
 		}
+		if (fieldName === "requestedDeliveryDate" && value) {
+			// Format date to a more readable format
+			return value.toLocaleDateString("en-US", {
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+			});
+		}
 
 		// Special handling for displaying color with visual indicator
+		// Special handling for sizes object
+		if (fieldName === "sizes" && value) {
+			const sizesWithQuantities = Object.entries(value)
+				.filter(([size, quantity]) => quantity > 0)
+				.map(([size, quantity]) => `${size}: ${quantity}`)
+				.join(", ");
+
+			if (sizesWithQuantities) {
+				return <CustomText>{sizesWithQuantities}</CustomText>;
+			} else {
+				return <CustomText className="text-[#CC0033]">No sizes selected</CustomText>;
+			}
+		}
+
 		if (fieldName === "color" && value) {
 			// Color hex values mapping for visual indicators
 			const colorHexMap = {
 				White: "#FFFFFF",
-				Black: "#000000",
 				Navy: "#000080",
-				Red: "#FF0000",
-				Green: "#008000",
 				Gray: "#808080",
-				Blue: "#0000FF",
-				Yellow: "#FFFF00",
 			};
+
+			let className = "w-0 h-0";
+			if (Object.keys(colorHexMap).includes(value)) {
+				className = `w-4 h-4 rounded-full mr-2 ${
+					value === "White" ? "border border-gray-300" : ""
+				}`;
+			}
 
 			return (
 				<div className="flex items-center">
 					<div
-						className={`w-4 h-4 rounded-full mr-2 ${
-							value === "White" ? "border border-gray-300" : ""
-						}`}
+						className={className}
 						style={{backgroundColor: colorHexMap[value] || "#FFFFFF"}}
 					></div>
 					<CustomText>{value}</CustomText>

@@ -96,7 +96,7 @@ export function FormWrapperComponent({
 	};
 
 	return (
-		<div className="flex flex-col relative items-center justify-start h-screen">
+		<div className="flex flex-col relative items-center justify-start h-dvh">
 			<div className="flex flex-row items-center w-full mb-[1.5%] mt-[1.5%]">
 				<FormProgressComponent
 					onClick={(index) => {

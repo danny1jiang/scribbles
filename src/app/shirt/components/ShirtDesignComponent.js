@@ -7,7 +7,7 @@ import Image from "next/image";
 import {useState, useEffect, useMemo, useCallback, memo, useRef} from "react";
 import {LongSleeveBack, LongSleeveFront, TshirtBack, TshirtFront} from "./ShirtOutlines";
 import {toPng} from "html-to-image";
-import {X} from "lucide-react";
+import {Plus, X} from "lucide-react";
 
 // Memoize the component to prevent unnecessary re-renders
 export const ShirtDesignComponent = memo(function ShirtDesignComponent({
@@ -18,7 +18,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 }) {
 	// State for front/back view
 	const [designView, setDesignView] = useState("front"); // 'front' or 'back'
-	const [longSleeves, setLongSleeves] = useState(false);
+	const [longSleeves, setLongSleeves] = useState(formData.material === "Sweatshirt");
 
 	// State for files and previews for both views
 	const [selectedFiles, setSelectedFiles] = useState({
@@ -206,33 +206,71 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 			</div>
 
 			<div className="w-full z-10">
-				<CustomText type={"medium"} className="mb-2 mt-4">
-					Sleeve Length
-				</CustomText>
-				<SelectComponent
-					className={styles.textBox + " " + styles.textBoxNormal}
-					options={["Short Sleeve", "Long Sleeve"]}
-					defaultValue={formData.sleeve}
-					onChange={(value) => {
-						if (value === "Short Sleeve") {
-							setLongSleeves(false);
-						} else {
-							setLongSleeves(true);
-						}
-						setFormData((prev) => ({
-							...prev,
-							sleeve: value,
-						}));
-					}}
-				/>
+				{formData.material !== "Sweatshirt" && (
+					<div>
+						<CustomText type={"medium"} className="mb-2 mt-4">
+							Sleeve Length
+						</CustomText>
+						<SelectComponent
+							className={styles.textBox + " " + styles.textBoxNormal}
+							options={["Short Sleeve", "Long Sleeve"]}
+							defaultValue={formData.sleeve}
+							onChange={(value) => {
+								if (value === "Short Sleeve") {
+									setLongSleeves(false);
+								} else {
+									setLongSleeves(true);
+								}
+								setFormData((prev) => ({
+									...prev,
+									sleeve: value,
+								}));
+							}}
+						/>
+					</div>
+				)}
 			</div>
 			<div>
 				<CustomText type={"medium"} className="mb-2 mt-4">
 					Choose Shirt Color
 				</CustomText>
 
-				<div className="flex flex-row flex-wrap mt-2 mb-4 gap-2">{colorButtons}</div>
+				<div className="flex flex-row flex-wrap mt-2 gap-2">
+					{colorButtons}
+					<div
+						onClick={() => handleColorChange()}
+						className={`w-8 flex justify-center items-center h-8 rounded-full cursor-pointer border border-gray-300 ${
+							!Object.keys(colorHexMap).includes(shirtColor)
+								? "ring-2 ring-(--color-secondary)"
+								: ""
+						}`}
+						style={{backgroundColor: "white"}}
+					>
+						<Plus color="#999999" />
+					</div>
+				</div>
 			</div>
+			{Object.keys(colorHexMap).includes(shirtColor) ? null : (
+				<div className="w-full">
+					<CustomText type={"medium"} className="mb-2 mt-4">
+						Custom Shirt Color
+					</CustomText>
+
+					<input
+						type="text"
+						value={shirtColor}
+						onChange={(e) => handleColorChange(e.target.value)}
+						placeholder="Enter a custom color"
+						className={
+							styles.textBox +
+							" " +
+							styles.textBoxNormal +
+							" " +
+							styles.textBoxPadding
+						}
+					/>
+				</div>
+			)}
 		</div>
 	);
 });

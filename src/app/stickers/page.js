@@ -10,6 +10,7 @@ export default function StickersPage() {
 	const [formData, setFormData] = useState({
 		quantity: 1,
 		dimensions: "1.5″ x 1.5″",
+		requestedDeliveryDate: new Date(),
 		type: "Die Cut",
 		shape: "Circular",
 		design: null,
@@ -49,7 +50,11 @@ export default function StickersPage() {
 		"Confirm your order details and submit the order form.",
 	];
 	const summaryInfo = [
-		{header: "General Information", fields: ["Quantity", "Dimensions"], required: [true, true]},
+		{
+			header: "General Information",
+			fields: ["Quantity", "Dimensions", "Requested Delivery Date"],
+			required: [true, true, true],
+		},
 		{header: "Sticker Type", fields: ["Type", "Shape"], required: [true, true]},
 		{header: "Design", fields: ["Design"], required: [false]},
 		{header: "Payment", fields: ["Email", "Payment"], required: [true, true]},

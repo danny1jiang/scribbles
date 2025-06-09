@@ -1,31 +1,90 @@
 import {CustomText} from "@/components/CustomText";
-import {SelectComponent} from "@/components/SelectComponent";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export function ShirtBasicInfoComponent({setFormData, formData, styles}) {
+	const sizes = [
+		"Youth Small",
+		"Youth Medium",
+		"Youth Large",
+		"Adult Small",
+		"Adult Medium",
+		"Adult Large",
+		"Adult 2XL",
+		"Adult 3XL",
+	];
+
+	// Initialize sizes object if it doesn't exist
+	const initializeSizes = () => {
+		if (!formData.sizes || typeof formData.sizes !== "object") {
+			const initialSizes = {};
+			sizes.forEach((size) => {
+				initialSizes[size] = 0;
+			});
+			setFormData({...formData, sizes: initialSizes});
+		}
+	};
+
+	// Initialize sizes on component mount
+	if (!formData.sizes) {
+		initializeSizes();
+	}
+
+	const handleQuantityChange = (size, quantity) => {
+		const numericQuantity = parseInt(quantity.replace(/[^0-9]/g, "")) || 0;
+		setFormData({
+			...formData,
+			sizes: {
+				...formData.sizes,
+				[size]: numericQuantity,
+			},
+		});
+	};
+
 	return (
 		<div className="flex flex-col items-start justify-center w-full">
-			<CustomText type={"medium"}>Quantity</CustomText>
-			<input
+			<CustomText type={"medium"}>Requested Delivery Date</CustomText>
+			<DatePicker
 				className={
 					styles.textBox + " " + styles.textBoxNormal + " " + styles.textBoxPadding
 				}
-				defaultValue={formData.quantity}
-				onChange={(e) => {
-					setFormData({...formData, quantity: e.target.value});
-				}}
-				type="number"
+				wrapperClassName={"w-full"}
+				popperPlacement="bottom-start"
+				showPopperArrow={false}
+				selected={formData.requestedDeliveryDate || new Date()}
+				onChange={(date) => setFormData({...formData, requestedDeliveryDate: date})}
 			/>
 			<CustomText className={"mt-5"} type={"medium"}>
-				Size
+				Size and Quantity Selection
 			</CustomText>
-			<SelectComponent
-				className={styles.textBox + " " + styles.textBoxNormal}
-				options={["Small", "Medium", "Large"]}
-				defaultValue={formData.size}
-				onChange={(selected) => {
-					setFormData({...formData, size: selected});
-				}}
-			/>
+			<div className="w-full mt-3 overflow-hidden rounded-lg border border-(--color-gray)">
+				<table className="w-full">
+					<thead>
+						<tr>
+							<th className="text-left py-3 px-4 font-medium text-lg">Size</th>
+							<th className="text-left py-3 px-4 font-medium text-lg">Quantity</th>
+						</tr>
+					</thead>
+					<tbody>
+						{sizes.map((size, index) => (
+							<tr key={size}>
+								<td className="py-3 px-4 border-t border-(--color-gray) w-1/2">
+									<CustomText>{size}</CustomText>
+								</td>
+								<td className="py-3 px-4 border-t border-(--color-gray) w-1/2">
+									<input
+										className={`${styles.textBox} ${styles.textBoxPadding} w-full h-10 text-start pl-2`}
+										type="text"
+										value={formData.sizes?.[size] || 0}
+										onChange={(e) => handleQuantityChange(size, e.target.value)}
+										placeholder="0"
+									/>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	);
 }

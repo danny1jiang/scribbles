@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useState, useEffect, useRef} from "react";
 import arrowIcon from "@/../public/icons/chevron-down.svg";
 import Image from "next/image";
 import {AnimatePresence, motion} from "framer-motion";
@@ -6,6 +6,7 @@ import {AnimatePresence, motion} from "framer-motion";
 export function SelectComponent({onChange, options, defaultValue, className}) {
 	const [open, setOpen] = useState(false);
 	const [selected, setSelected] = useState(defaultValue);
+	const selectRef = useRef(null);
 
 	function onSelect(option) {
 		setSelected(option);
@@ -15,14 +16,28 @@ export function SelectComponent({onChange, options, defaultValue, className}) {
 		}
 	}
 
-	function handleBlur(event) {
-		if (!event.currentTarget.contains(event.relatedTarget)) {
-			setOpen(false);
+	// Handle click outside to close dropdown - works better on iOS than onBlur
+	useEffect(() => {
+		function handleClickOutside(event) {
+			if (selectRef.current && !selectRef.current.contains(event.target)) {
+				setOpen(false);
+			}
 		}
-	}
+
+		if (open) {
+			// Add event listener to document for click outside detection
+			document.addEventListener("mousedown", handleClickOutside);
+			document.addEventListener("touchstart", handleClickOutside);
+		}
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+			document.removeEventListener("touchstart", handleClickOutside);
+		};
+	}, [open]);
 
 	return (
-		<div className={className + " z-10"} onBlur={handleBlur}>
+		<div ref={selectRef} className={className + (open ? " z-50" : " z-10")}>
 			<button
 				className={
 					"pl-2 pr-2 flex flex-row items-center justify-between w-full h-full cursor-pointer"
@@ -52,7 +67,7 @@ function OptionList({options, onSelect}) {
 			initial={{y: -5, opacity: 0}}
 			animate={{y: 0, opacity: 1}}
 			transition={{duration: 0.15, type: "tween", ease: "easeInOut"}}
-			className="mt-1 flex flex-col w-full rounded-lg bg-white p-1 shadow-lg"
+			className="mt-1 flex flex-col w-full rounded-lg bg-white p-1 shadow-lg z-50"
 		>
 			{options.map((option, index) => {
 				return (
