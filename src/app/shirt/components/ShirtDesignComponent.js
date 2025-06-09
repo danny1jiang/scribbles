@@ -18,7 +18,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 }) {
 	// State for front/back view
 	const [designView, setDesignView] = useState("front"); // 'front' or 'back'
-	const [longSleeves, setLongSleeves] = useState(false);
+	const [longSleeves, setLongSleeves] = useState(formData.material === "Sweatshirt");
 
 	// State for files and previews for both views
 	const [selectedFiles, setSelectedFiles] = useState({
@@ -206,25 +206,29 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 			</div>
 
 			<div className="w-full z-10">
-				<CustomText type={"medium"} className="mb-2 mt-4">
-					Sleeve Length
-				</CustomText>
-				<SelectComponent
-					className={styles.textBox + " " + styles.textBoxNormal}
-					options={["Short Sleeve", "Long Sleeve"]}
-					defaultValue={formData.sleeve}
-					onChange={(value) => {
-						if (value === "Short Sleeve") {
-							setLongSleeves(false);
-						} else {
-							setLongSleeves(true);
-						}
-						setFormData((prev) => ({
-							...prev,
-							sleeve: value,
-						}));
-					}}
-				/>
+				{formData.material !== "Sweatshirt" && (
+					<div>
+						<CustomText type={"medium"} className="mb-2 mt-4">
+							Sleeve Length
+						</CustomText>
+						<SelectComponent
+							className={styles.textBox + " " + styles.textBoxNormal}
+							options={["Short Sleeve", "Long Sleeve"]}
+							defaultValue={formData.sleeve}
+							onChange={(value) => {
+								if (value === "Short Sleeve") {
+									setLongSleeves(false);
+								} else {
+									setLongSleeves(true);
+								}
+								setFormData((prev) => ({
+									...prev,
+									sleeve: value,
+								}));
+							}}
+						/>
+					</div>
+				)}
 			</div>
 			<div>
 				<CustomText type={"medium"} className="mb-2 mt-4">
