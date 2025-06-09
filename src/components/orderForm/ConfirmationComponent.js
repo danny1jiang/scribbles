@@ -38,6 +38,17 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 					result[fieldName] = false; // Not required, so not missing
 				} else if (fieldName === "payment") {
 					result[fieldName] = !formData?.[fieldName] || formData[fieldName].trim() === "";
+				} else if (fieldName === "sizes") {
+					// Check if at least one size has a quantity > 0
+					const sizesObj = formData?.[fieldName];
+					if (!sizesObj) {
+						result[fieldName] = true;
+					} else {
+						const hasQuantity = Object.values(sizesObj).some(
+							(quantity) => quantity > 0
+						);
+						result[fieldName] = !hasQuantity;
+					}
 				} else {
 					result[fieldName] = !formData?.[fieldName];
 				}
@@ -149,6 +160,20 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 		}
 
 		// Special handling for displaying color with visual indicator
+		// Special handling for sizes object
+		if (fieldName === "sizes" && value) {
+			const sizesWithQuantities = Object.entries(value)
+				.filter(([size, quantity]) => quantity > 0)
+				.map(([size, quantity]) => `${size}: ${quantity}`)
+				.join(", ");
+
+			if (sizesWithQuantities) {
+				return <CustomText>{sizesWithQuantities}</CustomText>;
+			} else {
+				return <CustomText className="text-[#CC0033]">No sizes selected</CustomText>;
+			}
+		}
+
 		if (fieldName === "color" && value) {
 			// Color hex values mapping for visual indicators
 			const colorHexMap = {

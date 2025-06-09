@@ -79,6 +79,13 @@ export async function setSheetData(formData, itemType) {
 									month: "long",
 									day: "numeric",
 								});
+							} else if (key === "sizes") {
+								// Format sizes object into a readable string
+								const sizesWithQuantities = Object.entries(formData[key])
+									.filter(([size, quantity]) => quantity > 0)
+									.map(([size, quantity]) => `${size}: ${quantity}`)
+									.join(", ");
+								return sizesWithQuantities || "No sizes selected";
 							} else {
 								return formData[key];
 							}
