@@ -105,7 +105,6 @@ export async function compressFormImages(formData, maxTotalSize = 6 * 1024 * 102
 
 	// Early return if running on server-side (no document/Image available)
 	if (typeof window === "undefined") {
-		console.log("Server-side environment detected, skipping compression");
 		return compressedData;
 	}
 
@@ -136,12 +135,8 @@ export async function compressFormImages(formData, maxTotalSize = 6 * 1024 * 102
 	// Calculate total current size
 	let totalSize = images.reduce((sum, img) => sum + img.originalSize, 0);
 
-	console.log(`Original total image size: ${(totalSize / (1024 * 1024)).toFixed(2)} MB`);
-	console.log(`Max total size: ${(maxTotalSize / (1024 * 1024)).toFixed(2)} MB`);
-
 	// If already under limit, no compression needed
 	if (totalSize <= maxTotalSize) {
-		console.log("Images already under size limit, no compression needed");
 		return {
 			data: compressedData,
 			compressionInfo: {
@@ -159,8 +154,6 @@ export async function compressFormImages(formData, maxTotalSize = 6 * 1024 * 102
 	const maxAttempts = 5;
 
 	while (totalSize > maxTotalSize && attempts < maxAttempts) {
-		console.log(`Compression attempt ${attempts + 1} with quality ${compressionLevel}`);
-
 		// Compress all images
 		const compressionPromises = images.map(async (img) => {
 			try {
@@ -195,8 +188,6 @@ export async function compressFormImages(formData, maxTotalSize = 6 * 1024 * 102
 		const compressedImages = await Promise.all(compressionPromises);
 		totalSize = compressedImages.reduce((sum, img) => sum + img.compressedSize, 0);
 
-		console.log(`Compressed total size: ${(totalSize / (1024 * 1024)).toFixed(2)} MB`);
-
 		// If we've achieved the target size, apply the compression
 		if (totalSize <= maxTotalSize) {
 			compressedImages.forEach((img) => {
@@ -205,9 +196,6 @@ export async function compressFormImages(formData, maxTotalSize = 6 * 1024 * 102
 					base64: img.compressedBase64,
 				};
 			});
-			console.log(
-				`✓ Successfully compressed images to ${(totalSize / (1024 * 1024)).toFixed(2)} MB`
-			);
 
 			const originalTotalSize = images.reduce((sum, img) => sum + img.originalSize, 0);
 			return {
@@ -233,7 +221,6 @@ export async function compressFormImages(formData, maxTotalSize = 6 * 1024 * 102
 	// If still over limit after all attempts, apply final compression with lowest quality
 	if (totalSize > maxTotalSize) {
 		console.warn(`⚠ Images still exceed size limit after ${maxAttempts} compression attempts`);
-		console.log("Applying final aggressive compression...");
 
 		const finalCompressionPromises = images.map(async (img) => {
 			try {
@@ -265,7 +252,6 @@ export async function compressFormImages(formData, maxTotalSize = 6 * 1024 * 102
 			(sum, img) => sum + getBase64Size(img.compressedBase64),
 			0
 		);
-		console.log(`Final compressed size: ${(finalSize / (1024 * 1024)).toFixed(2)} MB`);
 
 		if (finalSize > maxTotalSize) {
 			console.error("⚠ Warning: Final compressed size still exceeds target limit");
