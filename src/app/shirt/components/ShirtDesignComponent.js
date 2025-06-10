@@ -19,6 +19,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 	// State for front/back view
 	const [designView, setDesignView] = useState("front"); // 'front' or 'back'
 	const [longSleeves, setLongSleeves] = useState(formData.material === "Sweatshirt");
+	const [isLocked, setIsLocked] = useState(false);
 
 	// State for files and previews for both views
 	const [selectedFiles, setSelectedFiles] = useState({
@@ -64,6 +65,10 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 			// Use the base64 data directly for preview
 			if (fileInfo && fileInfo.base64) {
 				setPreviewUrls((prev) => ({...prev, [designView]: fileInfo.base64}));
+
+				// Lock side switching for 500ms after file upload
+				setIsLocked(true);
+				setTimeout(() => setIsLocked(false), 500);
 			} else {
 				setPreviewUrls((prev) => ({...prev, [designView]: null}));
 			}
@@ -181,7 +186,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 			<div className="flex justify-start mt-4 mb-4 bg-(--color-light-gray) rounded-full pl-1 pr-1">
 				<div className="relative flex w-40 pt-1 pb-1">
 					<button
-						onClick={() => setDesignView("front")}
+						onClick={() => !isLocked && setDesignView("front")}
 						className={`relative z-10 flex-1 py-1 text-center rounded-full transition-colors duration-300 ease-in-out ${
 							designView === "front" ? "text-white" : "text-gray-600"
 						}`}
@@ -189,7 +194,7 @@ export const ShirtDesignComponent = memo(function ShirtDesignComponent({
 						Front
 					</button>
 					<button
-						onClick={() => setDesignView("back")}
+						onClick={() => !isLocked && setDesignView("back")}
 						className={`relative z-10 flex-1 py-1 text-center rounded-full transition-colors duration-300 ease-in-out ${
 							designView === "back" ? "text-white" : "text-gray-600"
 						}`}
@@ -474,7 +479,7 @@ function ShirtDesign({
 
 	const handleMouseUp = useCallback(() => {
 		if (isInteracting) {
-			setFormDataPreview(containerRef.current);
+			setFormDataPreview(containerRef.current, designView);
 
 			setIsInteracting(false);
 			interactionRef.current.mode = null;
@@ -520,7 +525,8 @@ function ShirtDesign({
 		// Reset bounding box on URL change too
 		if (imageRef.current && containerRef.current) {
 			if (previewUrl !== null) {
-				setFormDataPreview(containerRef.current);
+				console.log("Setting preview URL:", previewUrl);
+				setFormDataPreview(containerRef.current, designView);
 			}
 			if (!metadata.current[designView + "BoundingBox"]) {
 				// Temporarily set scale/rotation to defaults to measure base size
@@ -552,9 +558,17 @@ function ShirtDesign({
 
 	useEffect(() => {
 		if (containerRef.current && previewUrl !== null) {
-			setFormDataPreview(containerRef.current);
+			setFormDataPreview(containerRef.current, designView);
 		}
 	}, [longSleeves, shirtColor]);
+
+	// Generate preview when view changes
+	useEffect(() => {
+		if (previewUrl && containerRef.current) {
+			console.log("initial containerRef: ", containerRef.current);
+			setFormDataPreview(containerRef.current, designView);
+		}
+	}, [designView, previewUrl]);
 
 	// Effect for global listeners
 	useEffect(() => {
@@ -596,22 +610,25 @@ function ShirtDesign({
 		};
 	}, [isSelected, handleClickOutside]);
 
-	async function setFormDataPreview(ref) {
+	async function setFormDataPreview(ref, designView) {
 		if (!ref) return;
 
 		const filter = (node) => {
-			// Check if the node is an element and has the class
 			if (node.title === "boundingBox") {
 				return false; // Ignore bounding box
 			}
 			return true;
 		};
 
-		const base64String = await toPng(ref, {filter: filter});
-		setFormData((prev) => ({
-			...prev,
-			[designView + "Preview"]: {base64: base64String},
-		}));
+		try {
+			const base64String = await toPng(ref, {filter: filter});
+			setFormData((prev) => ({
+				...prev,
+				[designView + "Preview"]: {base64: base64String},
+			}));
+		} catch (error) {
+			console.warn("Preview generation failed:", error);
+		}
 	}
 
 	// Define handle positions (example for corners)

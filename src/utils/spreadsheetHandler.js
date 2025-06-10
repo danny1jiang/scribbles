@@ -105,7 +105,6 @@ export async function setSheetData(formData, itemType) {
 		let designDataNames = [];
 		imageKeys.forEach((key) => {
 			if (formData[key] && formData[key] !== null) {
-				console.log(key);
 				designDataArr.push(formData[key]);
 				designDataNames.push(key);
 			}

@@ -10,7 +10,11 @@ export function ShirtMaterialsComponent({setFormData, formData, styles}) {
 				options={["Cotton", "Athletic", "Sweatshirt"]}
 				defaultValue={formData.material}
 				onChange={(selected) => {
-					setFormData({...formData, material: selected, sleeve: "Long Sleeve"});
+					setFormData({
+						...formData,
+						material: selected,
+						sleeve: selected === "Sweatshirt" ? "Long Sleeve" : "Short Sleeve",
+					});
 				}}
 			/>
 		</div>
