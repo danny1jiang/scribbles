@@ -338,13 +338,7 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 					<div className="ml-5">
 						<CustomButton
 							type={isFormValid ? "primary" : "disabled"}
-							text={
-								isCompressing
-									? "Compressing images..."
-									: isSubmitting
-									? "Submitting..."
-									: "Submit"
-							}
+							text={isSubmitting ? "Submitting..." : "Submit"}
 							onClick={isSubmitting ? null : handleSubmit}
 							disabled={isSubmitting || !isFormValid}
 						/>
