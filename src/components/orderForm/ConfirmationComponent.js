@@ -4,6 +4,7 @@ import {useState, useEffect, useMemo} from "react";
 import {CustomText} from "@/components/CustomText";
 import {CustomButton} from "@/components/CustomButton";
 import {setSheetData} from "@/utils/spreadsheetHandler";
+import {compressFormImages} from "@/utils/imageCompression";
 import {useRouter} from "next/navigation";
 
 export function ConfirmationComponent({summaryInfo, formData, setFormData, itemType, onBack}) {
@@ -11,6 +12,8 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 	const [charCount, setCharCount] = useState(formData?.specialInstructions?.length || 0);
 	const maxChars = 500;
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isCompressing, setIsCompressing] = useState(false);
+	const [compressionInfo, setCompressionInfo] = useState(null);
 	const [formErrors, setFormErrors] = useState([]);
 	const [showErrorBanner, setShowErrorBanner] = useState(false);
 	const [submissionSuccess, setSubmissionSuccess] = useState(false);
@@ -107,8 +110,14 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 			// Clone form data to avoid modifying the original
 			const submissionData = {...formData};
 
-			// Submit the data
-			await setSheetData(submissionData, itemType);
+			// Compress images before submission
+			setIsCompressing(true);
+			const compressionResult = await compressFormImages(submissionData, 3 * 1024 * 1024); // 6MB limit
+			setCompressionInfo(compressionResult.compressionInfo);
+			setIsCompressing(false);
+
+			// Submit the compressed data
+			await setSheetData(compressionResult.data, itemType);
 
 			// Handle success
 			setSubmissionSuccess(true);
@@ -121,6 +130,7 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 			}, 1000);
 		} catch (error) {
 			console.error("Error submitting form:", error);
+			setIsCompressing(false);
 			setFormErrors([
 				...formErrors,
 				"There was an error submitting your order. Please try again.",
@@ -266,6 +276,39 @@ export function ConfirmationComponent({summaryInfo, formData, setFormData, itemT
 						</CustomText>
 					</div>
 				)}
+
+				{/*{isCompressing && (
+					<div className="bg-[#E6F3FF] border border-[#0066CC] p-4 rounded-lg mb-8">
+						<CustomText type="medium" className="text-[#0066CC]">
+							Compressing images to optimize file size for submission...
+						</CustomText>
+					</div>
+				)}
+
+				{compressionInfo && compressionInfo.wasCompressed && (
+					<div className="bg-[#F0F8FF] border border-[#4169E1] p-4 rounded-lg mb-8">
+						<CustomText type="medium" className="text-[#4169E1] mb-2">
+							✓ Images Compressed Successfully
+						</CustomText>
+						<div className="text-sm text-[#4169E1]">
+							<div>Images processed: {compressionInfo.imageCount}</div>
+							<div>
+								Original size:{" "}
+								{(compressionInfo.originalSize / (1024 * 1024)).toFixed(2)} MB
+							</div>
+							<div>
+								Compressed size:{" "}
+								{(compressionInfo.finalSize / (1024 * 1024)).toFixed(2)} MB
+							</div>
+							<div>Space saved: {compressionInfo.compressionRatio}%</div>
+							{compressionInfo.warning && (
+								<div className="text-orange-600 mt-1">
+									⚠ {compressionInfo.warning}
+								</div>
+							)}
+						</div>
+					</div>
+				)}*/}
 
 				{/* Special Instructions Section - Always at the end */}
 				<div className="flex flex-col w-full">
